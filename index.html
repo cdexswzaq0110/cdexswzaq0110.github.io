@@ -20,9 +20,9 @@
         <a class="brand" href="#top" aria-label="TerryH Huang, home">Terry H.</a>
         <nav class="site-nav" aria-label="Primary navigation">
           <a href="#work">Work</a>
-          <a href="#about">About</a>
-          <a href="#principles">Principles</a>
-          <a href="#contact">Contact</a>
+          <a href="resume.html">Resume</a>
+          <a href="publications.html">Publications</a>
+          <a href="links.html">Links</a>
         </nav>
         <a
           class="header-link"
@@ -59,21 +59,15 @@
             </div>
           </div>
 
-          <div class="hero-visual" aria-label="Profile portrait and current focus">
+          <div class="hero-visual">
             <div class="portrait-frame">
-              <span class="portrait-index" aria-hidden="true">01</span>
               <img
-                src="https://avatars.githubusercontent.com/u/112371712?v=4"
+                src="assets/cappuccino.webp"
                 width="460"
                 height="460"
-                alt="TerryH Huang"
+                alt="Cappuccino with latte art on a warm wooden table"
                 fetchpriority="high"
               />
-            </div>
-            <div class="focus-card">
-              <p class="focus-label">Current focus</p>
-              <p>End-to-end ML pipelines</p>
-              <span>Data → Model → Validation → Delivery</span>
             </div>
           </div>
         </div>
@@ -87,7 +81,7 @@
           </div>
           <div class="section-intro">
             <p>Projects across backend systems, algorithms, and embedded engineering.</p>
-            <p class="section-count">03 projects</p>
+            <p class="section-count">04 projects</p>
           </div>
 
           <div class="project-grid">
@@ -98,12 +92,14 @@
                 rel="noreferrer"
                 aria-label="Open System Design Portfolio on GitHub"
               >
-                <div class="project-visual visual-systems" aria-hidden="true">
-                  <div class="system-node node-a">API</div>
-                  <div class="system-node node-b">DATA</div>
-                  <div class="system-node node-c">WEB</div>
-                  <span class="system-line line-a"></span>
-                  <span class="system-line line-b"></span>
+                <div class="project-visual visual-systems">
+                  <img
+                    src="assets/system-design.webp"
+                    width="1448"
+                    height="1086"
+                    loading="lazy"
+                    alt="Three sculptural modules representing QR generation, knowledge retrieval, and task scheduling"
+                  />
                 </div>
                 <div class="project-body">
                   <div>
@@ -131,12 +127,14 @@
                 rel="noreferrer"
                 aria-label="Open Data Structures and Algorithms on GitHub"
               >
-                <div class="project-visual visual-algorithms" aria-hidden="true">
-                  <div class="tree-node root">01</div>
-                  <div class="tree-node left">10</div>
-                  <div class="tree-node right">11</div>
-                  <span class="tree-line tree-left"></span>
-                  <span class="tree-line tree-right"></span>
+                <div class="project-visual visual-algorithms">
+                  <img
+                    src="assets/algorithms.webp"
+                    width="1448"
+                    height="1086"
+                    loading="lazy"
+                    alt="Tactile geometric structure representing data structures and algorithms"
+                  />
                 </div>
                 <div class="project-body">
                   <div>
@@ -164,12 +162,14 @@
                 rel="noreferrer"
                 aria-label="Open ESP8266 Distance System on GitHub"
               >
-                <div class="project-visual visual-embedded" aria-hidden="true">
-                  <div class="sensor-core"></div>
-                  <span class="signal signal-a"></span>
-                  <span class="signal signal-b"></span>
-                  <span class="signal signal-c"></span>
-                  <p>42<small>cm</small></p>
+                <div class="project-visual visual-embedded">
+                  <img
+                    src="assets/embedded-system.webp"
+                    width="1448"
+                    height="1086"
+                    loading="lazy"
+                    alt="Refined ultrasonic distance sensor and embedded controller"
+                  />
                 </div>
                 <div class="project-body">
                   <div>
@@ -186,6 +186,41 @@
                   <li>Embedded C++</li>
                   <li>ESP8266</li>
                   <li>IoT</li>
+                </ul>
+              </a>
+            </article>
+
+            <article class="project-card">
+              <a
+                href="https://github.com/cdexswzaq0110?tab=repositories"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Browse all repositories on GitHub"
+              >
+                <div class="project-visual visual-archive">
+                  <img
+                    src="assets/project-archive.webp"
+                    width="1448"
+                    height="1086"
+                    loading="lazy"
+                    alt="Curated collection of modular objects representing an engineering project archive"
+                  />
+                </div>
+                <div class="project-body">
+                  <div>
+                    <p class="project-index">04 / Archive</p>
+                    <h3>More Projects</h3>
+                  </div>
+                  <span class="project-arrow" aria-hidden="true">↗</span>
+                </div>
+                <p class="project-description">
+                  Browse the complete repository archive, including machine learning,
+                  deep learning, data analysis, scraping, APIs, and ongoing experiments.
+                </p>
+                <ul class="tag-list" aria-label="Categories">
+                  <li>Repositories</li>
+                  <li>Learning</li>
+                  <li>Experiments</li>
                 </ul>
               </a>
             </article>
@@ -309,4 +344,5 @@
     </footer>
   </body>
 </html>
+
 
