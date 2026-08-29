@@ -10,10 +10,12 @@
     <meta name="theme-color" content="#111111" />
     <title>黃樺裕 Huang Hua Yu (TerryH) | Machine Learning Engineer</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
   </head>
 
-  <body>
+  <body class="home-page">
     <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="scroll-progress" aria-hidden="true"></div>
 
     <header class="site-header">
       <div class="container header-inner">
@@ -40,7 +42,11 @@
         <div class="container hero-grid">
           <div class="hero-copy">
             <p class="eyebrow">Machine Learning · Software Systems</p>
-            <h1 id="hero-title">Build systems.<br />Study deeply.<br />Ship clearly.</h1>
+            <h1 id="hero-title">
+              <span class="hero-line">Build systems.</span>
+              <span class="hero-line">Study deeply.</span>
+              <span class="hero-line">Ship clearly.</span>
+            </h1>
             <p class="hero-lead">
               I’m TerryH Huang, an aspiring machine learning engineer connecting data,
               algorithms, and dependable software into practical projects.
