@@ -18,6 +18,23 @@
   --scroll-progress: 0;
 }
 
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+.manual-page-transition body {
+  animation: page-in 420ms var(--motion-ease) both;
+}
+
+.manual-page-transition body.page-leaving {
+  opacity: 0;
+  transform: translateY(-0.5rem);
+  transition: opacity 220ms ease-in, transform 220ms ease-in;
+}
+
 *,
 *::before,
 *::after {
@@ -179,6 +196,12 @@ h3,
   padding-block: clamp(4rem, 9vw, 8rem);
 }
 
+.hero-copy {
+  opacity: var(--hero-opacity, 1);
+  transform: translate3d(0, var(--hero-copy-y, 0), 0);
+  will-change: opacity, transform;
+}
+
 .eyebrow,
 .project-index,
 .skill-number {
@@ -276,10 +299,17 @@ h3,
   transition: transform 650ms var(--motion-ease);
 }
 
+.portrait-media {
+  overflow: hidden;
+}
+
 .portrait-frame img {
   width: 100%;
   aspect-ratio: 3 / 4;
   object-fit: cover;
+  transform: scale(1.06) translate3d(0, var(--hero-image-y, 0), 0);
+  transition: transform 160ms linear;
+  will-change: transform;
 }
 
 .section {
@@ -323,8 +353,15 @@ h3,
 .section-count {
   color: var(--muted);
   font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+.section-count [data-project-count] {
+  min-width: 3.4rem;
+  display: inline-block;
+  color: var(--ink);
 }
 
 .project-grid {
@@ -346,9 +383,26 @@ h3,
   background: var(--surface);
 }
 
+.motion-ready .project-visual::before {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--canvas);
+  content: "";
+  pointer-events: none;
+  transform: scaleY(1);
+  transform-origin: top;
+  transition: transform 900ms var(--motion-ease) 120ms;
+}
+
+.motion-ready .project-card.is-visible .project-visual::before {
+  transform: scaleY(0);
+}
+
 .project-visual::after {
   position: absolute;
   inset: 0.7rem;
+  z-index: 2;
   border: 1px solid transparent;
   content: "";
   pointer-events: none;
@@ -359,13 +413,16 @@ h3,
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1) translate3d(0, 0, 0);
-  transition: transform 650ms var(--motion-ease);
+  transform: scale(1.06)
+    translate3d(var(--media-x, 0), calc(var(--media-y, 0px) + var(--scroll-media-y, 0px)), 0);
+  transition: transform 180ms linear;
+  will-change: transform;
 }
 
 .project-card a:hover .project-visual img,
 .project-card a:focus-visible .project-visual img {
-  transform: scale(1.045) translate3d(var(--media-x, 0), var(--media-y, 0), 0);
+  transform: scale(1.1)
+    translate3d(var(--media-x, 0), calc(var(--media-y, 0px) + var(--scroll-media-y, 0px)), 0);
 }
 
 .project-card a:hover .project-visual::after,
@@ -385,6 +442,11 @@ h3,
 .project-index {
   color: var(--muted);
   font-size: 0.62rem;
+  transition: color 300ms ease;
+}
+
+.project-card.is-active .project-index {
+  color: var(--ink);
 }
 
 .project-card h3 {
@@ -497,6 +559,34 @@ h3,
   letter-spacing: 0.035em;
   line-height: 1.22;
   text-transform: uppercase;
+}
+
+.about-line {
+  display: block;
+}
+
+.motion-ready .about-reveal .about-line {
+  opacity: 0;
+  clip-path: inset(0 0 100%);
+  transform: translate3d(0, 1.2rem, 0);
+  transition:
+    opacity 650ms var(--motion-ease),
+    clip-path 850ms var(--motion-ease),
+    transform 850ms var(--motion-ease);
+}
+
+.motion-ready .about-reveal.is-visible .about-line {
+  opacity: 1;
+  clip-path: inset(0);
+  transform: translate3d(0, 0, 0);
+}
+
+.motion-ready .about-reveal.is-visible .about-line:nth-child(2) {
+  transition-delay: 100ms;
+}
+
+.motion-ready .about-reveal.is-visible .about-line:nth-child(3) {
+  transition-delay: 200ms;
 }
 
 .about-statement em {
@@ -1032,6 +1122,16 @@ h3,
 
 }
 
+@media (min-width: 701px) {
+  .header-inner {
+    transition: min-height 400ms var(--motion-ease);
+  }
+
+  .home-page.has-scrolled .header-inner {
+    min-height: 3.5rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -1043,7 +1143,13 @@ h3,
 
   .hero-visual::before,
   .portrait-frame,
+  .portrait-frame img,
   .project-visual img {
+    transform: none !important;
+  }
+
+  .hero-copy {
+    opacity: 1 !important;
     transform: none !important;
   }
 
@@ -1055,6 +1161,16 @@ h3,
 
   .motion-ready .section-heading span {
     transform: scaleX(1) !important;
+  }
+
+  .motion-ready .project-visual::before {
+    display: none;
+  }
+
+  .motion-ready .about-reveal .about-line {
+    opacity: 1 !important;
+    clip-path: none !important;
+    transform: none !important;
   }
 
   *,

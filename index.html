@@ -9,8 +9,8 @@
     />
     <meta name="theme-color" content="#111111" />
     <title>黃樺裕 Huang Hua Yu (TerryH) | Machine Learning Engineer</title>
-    <link rel="stylesheet" href="styles.css" />
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="styles.css?v=2" />
+    <script src="script.js?v=2" defer></script>
   </head>
 
   <body class="home-page">
@@ -66,13 +66,15 @@
 
           <div class="hero-visual">
             <div class="portrait-frame">
-              <img
-                src="assets/cappuccino.webp"
-                width="460"
-                height="460"
-                alt="Cappuccino with latte art on a warm wooden table"
-                fetchpriority="high"
-              />
+              <div class="portrait-media">
+                <img
+                  src="assets/cappuccino.webp"
+                  width="460"
+                  height="460"
+                  alt="Cappuccino with latte art on a warm wooden table"
+                  fetchpriority="high"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -86,7 +88,9 @@
           </div>
           <div class="section-intro">
             <p>Projects across machine learning, backend systems, algorithms, and embedded engineering.</p>
-            <p class="section-count">08 projects</p>
+            <p class="section-count">
+              <span data-project-count>01</span> / 08 projects
+            </p>
           </div>
 
           <div class="project-grid">
@@ -381,8 +385,9 @@
           </div>
           <div class="about-grid">
             <p class="about-statement">
-              I want to understand not only <em>how</em> tools work, but the principles
-              that make them reliable.
+              <span class="about-line">I want to understand</span>
+              <span class="about-line">not only <em>how</em> tools work,</span>
+              <span class="about-line">but the principles that make them reliable.</span>
             </p>
             <div class="about-copy">
               <p>
