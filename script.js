@@ -8,6 +8,7 @@
 const root = document.documentElement;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 const motion = !reducedMotion.matches;
 
 const clamp = (value, minimum, maximum) => Math.min(Math.max(value, minimum), maximum);
@@ -165,7 +166,7 @@ if (motion) {
 
     if (Math.abs(raw) > 0.4) scrollState.direction = raw > 0 ? 1 : -1;
 
-    if (projectGrid) {
+    if (projectGrid && !coarsePointer) {
       root.style.setProperty("--skew", `${clamp(smoothedVelocity * 0.025, -1.6, 1.6)}deg`);
     }
 
@@ -184,7 +185,7 @@ if (motion) {
    --------------------------------------------------------------- */
 
 const smoothScroll = (() => {
-  if (!motion || !finePointer.matches || window.matchMedia("(pointer: coarse)").matches) {
+  if (!motion || !finePointer.matches || coarsePointer) {
     return null;
   }
 
@@ -341,11 +342,13 @@ function playIntro() {
   const bar = preloader.querySelector("[data-preloader-bar]");
   const panels = [...preloader.querySelectorAll(".preloader-panels i")];
 
-  panels.forEach((panel, index) => panel.style.setProperty("--panel-delay", `${index * 65}ms`));
+  const stagger = coarsePointer ? 40 : 65;
+
+  panels.forEach((panel, index) => panel.style.setProperty("--panel-delay", `${index * stagger}ms`));
 
   return new Promise((resolve) => {
     const started = performance.now();
-    const duration = 1050;
+    const duration = coarsePointer ? 620 : 1050;
     let finished = false;
 
     const finish = () => {
@@ -377,7 +380,7 @@ function playIntro() {
     });
 
     /* Never let the curtain outstay its welcome. */
-    window.setTimeout(finish, 2400);
+    window.setTimeout(finish, coarsePointer ? 1600 : 2400);
   });
 }
 
@@ -624,7 +627,15 @@ function initHeroCanvas() {
 
   window.addEventListener("resize", () => {
     resize();
+    if (coarsePointer) draw(1, performance.now());
   });
+
+  /* Touch has no pointer for the field to follow — paint one static frame
+     instead of holding a rAF loop open on a phone battery. */
+  if (coarsePointer) {
+    draw(1, performance.now());
+    return;
+  }
 
   if ("IntersectionObserver" in window) {
     new IntersectionObserver(
@@ -670,6 +681,12 @@ function initMarquee() {
       clone.setAttribute("data-marquee-clone", "");
       marquee.append(clone);
     }
+
+    if (coarsePointer) {
+      marquee.style.setProperty("--marquee-distance", `${trackWidth}px`);
+      marquee.style.setProperty("--marquee-duration", `${Math.max(trackWidth / 45, 8).toFixed(2)}s`);
+      marquee.classList.add("is-auto");
+    }
   }
 
   build();
@@ -679,6 +696,10 @@ function initMarquee() {
     window.clearTimeout(resizeTimer);
     resizeTimer = window.setTimeout(build, 200);
   });
+
+  /* Constant motion with no velocity to couple to: a linear CSS animation
+     keeps running off the main thread while the page is still loading. */
+  if (coarsePointer) return;
 
   function run(delta) {
     if (!trackWidth) return;
@@ -1072,7 +1093,280 @@ function initLinkPreview() {
 }
 
 /* ---------------------------------------------------------------
-   13. Page transitions
+   13. Navigation sheet (touch)
+   --------------------------------------------------------------- */
+
+/* Apple frames springs as damping ratio + response rather than the physics
+   triplet. Response is how fast it reaches the target, not a duration —
+   a spring has none. Damping 1.0 settles flat; below that it overshoots. */
+function spring(from, to, velocity, apply, { dampingRatio = 0.86, response = 0.32 } = {}) {
+  const stiffness = ((2 * Math.PI) / response) ** 2;
+  const damping = (4 * Math.PI * dampingRatio) / response;
+
+  let value = from;
+  let speed = velocity;
+  let stop = null;
+
+  stop = addFrameTask((delta) => {
+    const step = Math.min(delta, 2) / 60;
+
+    speed += (-stiffness * (value - to) - damping * speed) * step;
+    value += speed * step;
+
+    const settled = Math.abs(value - to) < 0.5 && Math.abs(speed) < 20;
+
+    apply(settled ? to : value);
+
+    if (settled) stop();
+  });
+
+  return stop;
+}
+
+/* Scroll-style deceleration: animate to where the flick is going, not to the
+   nearest edge from where the finger happened to leave the glass. */
+const projectEndpoint = (velocity, rate = 0.998) => ((velocity / 1000) * rate) / (1 - rate);
+
+/* Past a boundary, resist progressively — real things slow before they stop. */
+const rubberband = (overshoot, dimension, constant = 0.55) =>
+  (overshoot * dimension * constant) / (dimension + constant * Math.abs(overshoot));
+
+function initNavSheet() {
+  const sheet = document.querySelector("[data-nav-sheet]");
+  const panel = sheet?.querySelector("[data-nav-panel]");
+  const scrim = sheet?.querySelector("[data-nav-scrim]");
+  const toggle = document.querySelector("[data-nav-toggle]");
+
+  if (!sheet || !panel || !scrim || !toggle) return;
+
+  let isOpen = false;
+  let height = 1;
+  let position = 0;
+  let cancelSpring = null;
+  let dragging = false;
+  let committed = false;
+  let activePointer = null;
+  let startPointer = 0;
+  let startPosition = 0;
+  let samples = [];
+  let lastFocused = null;
+  let suppressClickUntil = 0;
+
+  const measure = () => {
+    height = panel.offsetHeight || 1;
+  };
+
+  function render(value) {
+    position = value;
+    panel.style.translate = `0 ${value.toFixed(2)}px`;
+    scrim.style.opacity = clamp(1 - value / height, 0, 1);
+  }
+
+  function settle(to, velocity = 0, after) {
+    cancelSpring?.();
+    cancelSpring = null;
+
+    if (!motion) {
+      render(to);
+      after?.();
+      return;
+    }
+
+    cancelSpring = spring(position, to, velocity, (value) => {
+      render(value);
+
+      if (value === to) {
+        cancelSpring = null;
+        after?.();
+      }
+    });
+  }
+
+  function openSheet() {
+    if (isOpen) return;
+
+    isOpen = true;
+    lastFocused = document.activeElement;
+    sheet.hidden = false;
+    measure();
+    render(height);
+    root.classList.add("sheet-open");
+    toggle.setAttribute("aria-expanded", "true");
+    panel.focus({ preventScroll: true });
+    settle(0);
+  }
+
+  function closeSheet(velocity = 0) {
+    if (!isOpen) return;
+
+    isOpen = false;
+    toggle.setAttribute("aria-expanded", "false");
+    root.classList.remove("sheet-open");
+
+    /* Move focus out before the panel is hidden, not after. */
+    if (panel.contains(document.activeElement)) {
+      lastFocused?.focus?.({ preventScroll: true });
+    }
+
+    settle(height, velocity, () => {
+      sheet.hidden = true;
+    });
+  }
+
+  function forceClose() {
+    cancelSpring?.();
+    cancelSpring = null;
+    dragging = false;
+    isOpen = false;
+    toggle.setAttribute("aria-expanded", "false");
+    root.classList.remove("sheet-open");
+    measure();
+    render(height);
+    sheet.hidden = true;
+  }
+
+  toggle.addEventListener("click", () => (isOpen ? closeSheet(400) : openSheet()));
+  scrim.addEventListener("click", () => closeSheet(500));
+
+  panel.addEventListener("pointerdown", (event) => {
+    /* Multi-touch protection: a second finger mid-drag makes the sheet jump. */
+    if (!isOpen || dragging) return;
+
+    dragging = true;
+    committed = false;
+    activePointer = event.pointerId;
+
+    /* Capture keeps the drag alive once the finger leaves the panel bounds.
+       It throws if the pointer is already gone, which must not kill the drag. */
+    try {
+      panel.setPointerCapture(activePointer);
+    } catch (error) {
+      /* tracking still works without capture */
+    }
+    cancelSpring?.();
+    cancelSpring = null;
+    measure();
+    startPointer = event.clientY;
+    startPosition = position;
+    samples = [{ y: event.clientY, t: event.timeStamp }];
+  });
+
+  panel.addEventListener("pointermove", (event) => {
+    if (!dragging || event.pointerId !== activePointer) return;
+
+    const travel = event.clientY - startPointer;
+
+    /* ~10px of hysteresis before committing to the gesture. */
+    if (!committed) {
+      if (Math.abs(travel) < 8) return;
+
+      committed = true;
+    }
+
+    const next = startPosition + travel;
+
+    render(next < 0 ? -rubberband(-next, height) : next);
+
+    samples.push({ y: event.clientY, t: event.timeStamp });
+
+    if (samples.length > 5) samples.shift();
+  });
+
+  function endDrag(event) {
+    if (!dragging || event.pointerId !== activePointer) return;
+
+    dragging = false;
+
+    try {
+      panel.releasePointerCapture?.(activePointer);
+    } catch (error) {
+      /* capture was never taken */
+    }
+
+    activePointer = null;
+
+    if (!committed) return;
+
+    /* Suppress the click a committed drag would otherwise fire on a link. */
+    suppressClickUntil = performance.now() + 320;
+
+    const last = samples[samples.length - 1];
+    const first = samples[0];
+    const elapsed = Math.max(last.t - first.t, 1);
+    const velocity = ((last.y - first.y) / elapsed) * 1000;
+
+    /* A flick dismisses on velocity alone; otherwise use where it is heading. */
+    const shouldClose =
+      Math.abs(velocity) > 110
+        ? velocity > 0
+        : position + projectEndpoint(velocity) > height * 0.4;
+
+    if (shouldClose) closeSheet(velocity);
+    else settle(0, velocity);
+  }
+
+  panel.addEventListener("pointerup", endDrag);
+  panel.addEventListener("pointercancel", endDrag);
+
+  panel.addEventListener(
+    "click",
+    (event) => {
+      if (performance.now() < suppressClickUntil) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    },
+    true,
+  );
+
+  /* Close before the anchor handler runs so the scroll lock is already off. */
+  panel.addEventListener("click", (event) => {
+    if (event.target instanceof Element && event.target.closest("a[href]")) closeSheet(500);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (!isOpen) return;
+
+    if (event.key === "Escape") {
+      closeSheet(400);
+      return;
+    }
+
+    if (event.key !== "Tab") return;
+
+    const focusable = [...panel.querySelectorAll("a[href], button:not([disabled])")];
+
+    if (!focusable.length) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (!isOpen) return;
+
+    /* Resized past the breakpoint — the toggle is gone, so is the sheet. */
+    if (toggle.offsetParent === null) {
+      forceClose();
+      return;
+    }
+
+    measure();
+
+    if (!dragging && !cancelSpring) render(0);
+  });
+}
+
+/* ---------------------------------------------------------------
+   14. Page transitions
    --------------------------------------------------------------- */
 
 function initPageTransition() {
@@ -1109,10 +1403,11 @@ function initPageTransition() {
 }
 
 /* ---------------------------------------------------------------
-   14. Boot
+   15. Boot
    --------------------------------------------------------------- */
 
 initFilter();
+initNavSheet();
 
 if (!motion) {
   root.classList.remove("is-loading");

@@ -14,8 +14,13 @@
   --section-space: clamp(5rem, 10vw, 8rem);
   --content-width: 72rem;
   --transition: 180ms ease;
-  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --motion-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Canonical curves — built-in CSS easings are too weak for UI. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  /* Legacy names alias the canonical curves rather than forking them. */
+  --motion-ease: var(--ease-out);
+  --motion-out: var(--ease-out);
   --scroll-progress: 0;
   --skew: 0deg;
 }
@@ -656,9 +661,14 @@ h3,
   letter-spacing: 0.1em;
   text-decoration: none;
   text-transform: uppercase;
-  transform: translate3d(var(--mx, 0), var(--my, 0), 0);
+  translate: var(--mx, 0) var(--my, 0);
+  scale: var(--press, 1);
   transition: color var(--transition), background var(--transition),
-    transform 600ms var(--motion-ease);
+    translate 160ms var(--ease-out), scale 160ms var(--ease-out);
+}
+
+.button:active {
+  --press: 0.97;
 }
 
 .button:hover {
@@ -677,8 +687,21 @@ h3,
 }
 
 [data-magnetic] {
-  transform: translate3d(var(--mx, 0), var(--my, 0), 0);
-  transition: transform 600ms var(--motion-ease);
+  translate: var(--mx, 0) var(--my, 0);
+  scale: var(--press, 1);
+  transition: translate 160ms var(--ease-out), scale 160ms var(--ease-out);
+}
+
+[data-magnetic]:active {
+  --press: 0.97;
+}
+
+/* The lazy magnetic release is a pointer flourish — gate it to fine pointers so
+   touch keeps the snappy 160ms press. */
+@media (hover: hover) and (pointer: fine) {
+  [data-magnetic] {
+    transition: translate 600ms var(--ease-out), scale 160ms var(--ease-out);
+  }
 }
 
 .hero-visual {
@@ -2046,6 +2069,302 @@ h3,
 @media (hover: none), (pointer: coarse) {
   .project-grid {
     transform: none;
+  }
+}
+
+/* ===============================================================
+   Touch & mobile
+   Built to the emilkowalski/skills bar: respond on pointer-down,
+   track 1:1, interruptible motion, transform/opacity only.
+   =============================================================== */
+
+/* We supply our own press feedback, so suppress the platform flash. */
+.button,
+.filter-chip,
+.nav-toggle,
+.text-link,
+.to-top,
+.brand,
+.site-nav a,
+.header-link,
+.project-card a,
+.link-list a,
+.publication-list > a,
+.document-meta a,
+.nav-sheet-links a,
+.hero-scroll {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filter-chip {
+  scale: var(--press, 1);
+}
+
+.filter-chip:active {
+  --press: 0.96;
+}
+
+.project-card a {
+  scale: var(--press, 1);
+  transition: scale 160ms var(--ease-out);
+}
+
+.project-card a:active {
+  --press: 0.985;
+}
+
+.link-list a,
+.publication-list > a {
+  scale: var(--press, 1);
+  transform-origin: left center;
+}
+
+.link-list a:active,
+.publication-list > a:active {
+  --press: 0.99;
+}
+
+/* ---------------------------------------------------------------
+   Navigation sheet
+   --------------------------------------------------------------- */
+
+.nav-toggle {
+  display: none;
+}
+
+.nav-sheet {
+  display: none;
+}
+
+.nav-sheet[hidden] {
+  display: none;
+}
+
+.nav-sheet-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgb(17 17 17 / 45%);
+  opacity: 0;
+}
+
+.nav-sheet-panel {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 0.85rem var(--gutter) max(1.75rem, env(safe-area-inset-bottom));
+  border-radius: 1.25rem 1.25rem 0 0;
+  background: var(--canvas);
+  box-shadow: 0 -1.5rem 3rem rgb(17 17 17 / 18%);
+  /* Closed by default so the sheet never flashes before JS takes over. */
+  translate: 0 100%;
+  will-change: translate;
+}
+
+.nav-sheet-handle {
+  width: 2.5rem;
+  height: 4px;
+  margin: 0 auto 1.5rem;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.nav-sheet-links {
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+
+.nav-sheet-links a {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  scale: var(--press, 1);
+  transform-origin: left center;
+  transition: scale 160ms var(--ease-out);
+}
+
+.nav-sheet-links a:active {
+  --press: 0.975;
+}
+
+.nav-sheet-links a[aria-current="page"] {
+  color: var(--muted);
+}
+
+.nav-sheet-links a b {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.nav-sheet-note {
+  margin-top: 1.5rem;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.sheet-open {
+  overflow: hidden;
+}
+
+@media (max-width: 700px) {
+  /* The cramped second-row link strip becomes one 44px target. */
+  .site-nav,
+  .header-link {
+    display: none;
+  }
+
+  .header-inner {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0 0.15rem;
+    border: 0;
+    color: var(--white);
+    background: none;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    scale: var(--press, 1);
+    transition: scale 160ms var(--ease-out);
+  }
+
+  .nav-toggle:active {
+    --press: 0.95;
+  }
+
+  .nav-toggle-lines {
+    display: grid;
+    width: 1.1rem;
+    gap: 0.28rem;
+  }
+
+  .nav-toggle-lines i {
+    height: 1px;
+    background: currentColor;
+    transition: translate 260ms var(--ease-out), rotate 260ms var(--ease-out);
+  }
+
+  .nav-toggle[aria-expanded="true"] .nav-toggle-lines i:first-child {
+    translate: 0 0.145rem;
+    rotate: 45deg;
+  }
+
+  .nav-toggle[aria-expanded="true"] .nav-toggle-lines i:last-child {
+    translate: 0 -0.145rem;
+    rotate: -45deg;
+  }
+
+  .nav-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: block;
+    /* The sheet owns every touch inside it — the drag is handled in JS. */
+    touch-action: none;
+    overscroll-behavior: contain;
+  }
+
+  /* A translucent bar lets content pass underneath instead of a solid strip. */
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .site-header {
+      background: rgb(17 17 17 / 72%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      backdrop-filter: blur(18px) saturate(160%);
+    }
+  }
+
+  /* Chips scroll sideways instead of wrapping into three ragged rows. */
+  .filter-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+  }
+
+  .filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-chip {
+    flex: none;
+    min-height: 2.5rem;
+    scroll-snap-align: start;
+  }
+
+  /* One column — a sideways offset on entry reads as a glitch, not a reveal. */
+  .motion-ready .project-card:nth-child(odd),
+  .motion-ready .project-card:nth-child(even) {
+    transform: translate3d(0, 1rem, 0);
+  }
+
+  .motion-ready .project-card.is-visible {
+    transform: translate3d(0, 0, 0);
+  }
+
+  /* Comfortable targets. */
+  .link-list a,
+  .document-meta a,
+  .footer-inner a {
+    min-height: 2.75rem;
+  }
+}
+
+/* Battery: the dot field and grain are pointer-driven flourishes. On touch the
+   canvas is painted once (static texture, no rAF) and the grain stops moving. */
+@media (hover: none), (pointer: coarse) {
+  .motion-ready .grain {
+    animation: none;
+    will-change: auto;
+  }
+
+  .marquee.is-auto {
+    animation: marquee-scroll var(--marquee-duration, 24s) linear infinite;
+    transform: none;
+  }
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(calc(var(--marquee-distance, 0px) * -1), 0, 0);
+  }
+}
+
+/* Dynamic viewport units: mobile URL bars resize the viewport mid-scroll. */
+@supports (height: 100dvh) {
+  .hero-grid {
+    min-height: clamp(40rem, 82dvh, 52rem);
+  }
+
+  .page-main {
+    min-height: calc(100dvh - 8rem);
   }
 }
 
