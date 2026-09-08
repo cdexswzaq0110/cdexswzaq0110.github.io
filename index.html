@@ -39,8 +39,8 @@
     <meta name="twitter:image" content="https://cdexswzaq0110.github.io/assets/system-design.webp" />
 
     <link rel="preload" as="image" href="assets/cappuccino.webp" fetchpriority="high" />
-    <link rel="stylesheet" href="styles.css?v=4" />
-    <script src="script.js?v=4" defer></script>
+    <link rel="stylesheet" href="styles.css?v=5" />
+    <script src="script.js?v=5" defer></script>
     <script>
       /* Set intro + capability flags before first paint to avoid a flash. */
       (function () {
@@ -259,39 +259,56 @@
       <section class="section work-section" id="work" aria-labelledby="work-title">
         <div class="container">
           <div class="section-heading">
-            <h2 id="work-title">Selected Work</h2>
+            <h2 id="work-title">Selected work<span class="work-period" aria-hidden="true">.</span></h2>
             <span aria-hidden="true"></span>
           </div>
           <div class="section-intro">
-            <p data-split="words">Projects across machine learning, backend systems, algorithms, and embedded engineering.</p>
-            <p class="section-count">
-              <span data-project-count>01</span> / <span data-project-total>12</span> projects
-            </p>
+            <p>From first principles to working systems.<br />A collection of things I’ve built and studied.</p>
+            <p class="section-count"><strong data-project-total>14</strong> projects to explore</p>
           </div>
 
-          <div class="filter-bar" role="group" aria-label="Filter projects by focus">
-            <button type="button" class="filter-chip is-active" data-filter="all" aria-pressed="true">
-              All <sup>12</sup>
-            </button>
-            <button type="button" class="filter-chip" data-filter="ml" aria-pressed="false">
-              Machine Learning <sup>06</sup>
-            </button>
-            <button type="button" class="filter-chip" data-filter="backend" aria-pressed="false">
-              Backend &amp; Systems <sup>06</sup>
-            </button>
-            <button type="button" class="filter-chip" data-filter="foundations" aria-pressed="false">
-              Foundations <sup>03</sup>
-            </button>
+          <div class="work-toolbar">
+            <div class="filter-bar" role="group" aria-label="Filter projects by focus">
+              <button type="button" class="filter-chip is-active" data-filter="all" aria-pressed="true" aria-controls="project-collection">All work <sup>14</sup></button>
+              <button type="button" class="filter-chip" data-filter="ml" aria-pressed="false" aria-controls="project-collection">Machine learning <sup>08</sup></button>
+              <button type="button" class="filter-chip" data-filter="backend" aria-pressed="false" aria-controls="project-collection">Systems &amp; agents <sup>08</sup></button>
+              <button type="button" class="filter-chip" data-filter="foundations" aria-pressed="false" aria-controls="project-collection">Foundations <sup>02</sup></button>
+            </div>
+            <p class="work-filter-status" data-filter-status role="status" aria-live="polite">14 projects · All work</p>
           </div>
 
-          <div class="project-grid" data-project-grid>
-            <article class="project-card" data-tags="backend">
+          <div class="work-layout">
+            <details class="work-directory" data-work-directory open>
+              <summary>Project index <span aria-hidden="true">↗</span></summary>
+              <nav aria-label="Project index">
+                <ol>
+                  <li><a href="#project-system-design" data-project-jump="system-design"><span>01</span>System Design</a></li>
+                  <li><a href="#project-algorithms" data-project-jump="algorithms"><span>02</span>Data Structures &amp; Algorithms</a></li>
+                  <li><a href="#project-serendipity" data-project-jump="serendipity"><span>03</span>Serendipity–Epiphany</a></li>
+                  <li><a href="#project-agent-kernel" data-project-jump="agent-kernel"><span>04</span>Agent Kernel</a></li>
+                  <li><a href="#project-ordostack" data-project-jump="ordostack"><span>05</span>OrdoStack</a></li>
+                  <li><a href="#project-veloguard" data-project-jump="veloguard"><span>06</span>VeloGuard</a></li>
+                  <li><a href="#project-esp8266" data-project-jump="esp8266"><span>07</span>ESP8266 Distance Sensor</a></li>
+                  <li><a href="#project-indoor-positioning" data-project-jump="indoor-positioning"><span>08</span>Indoor Positioning</a></li>
+                  <li><a href="#project-titanic" data-project-jump="titanic"><span>09</span>Titanic Control Tower</a></li>
+                  <li><a href="#project-house-prices" data-project-jump="house-prices"><span>10</span>House Prices</a></li>
+                  <li><a href="#project-signalweave" data-project-jump="signalweave"><span>11</span>SignalWeave</a></li>
+                  <li><a href="#project-skin-lesion" data-project-jump="skin-lesion"><span>12</span>Skin Lesion Vision</a></li>
+                  <li><a href="#project-thermoforge" data-project-jump="thermoforge"><span>13</span>ThermoForge</a></li>
+                  <li><a href="#project-more-projects" data-project-jump="more-projects"><span>14</span>More Projects</a></li>
+                </ol>
+              </nav>
+              <p class="work-directory-note">Source, decisions, and documentation.<br />Open every project on GitHub.</p>
+            </details>
+
+            <div class="project-grid" id="project-collection" data-project-grid>
+            <article class="project-card" id="project-system-design" tabindex="-1" data-tags="backend">
               <a
                 href="https://github.com/cdexswzaq0110/build-moat-system-design-portfolio"
                 target="_blank"
                 rel="noreferrer"
                 data-cursor-label="View"
-                aria-label="Open System Design Portfolio on GitHub"
+                aria-label="Open System Design on GitHub"
               >
                 <div class="project-visual visual-systems" data-tilt>
                   <img
@@ -304,8 +321,8 @@
                 </div>
                 <div class="project-body">
                   <div>
-                    <p class="project-index">01 / Backend</p>
-                    <h3>System Design Portfolio</h3>
+                    <p class="project-index">01 / System architecture</p>
+                    <h3>System Design</h3>
                   </div>
                   <span class="project-arrow" aria-hidden="true">↗</span>
                 </div>
@@ -318,16 +335,17 @@
                   <li>FastAPI</li>
                   <li>System Design</li>
                 </ul>
+                <p class="project-source"><span>build-moat-system-design-portfolio</span><span>GitHub ↗</span></p>
               </a>
             </article>
 
-            <article class="project-card" data-tags="foundations">
+            <article class="project-card" id="project-algorithms" tabindex="-1" data-tags="foundations">
               <a
-                href="https://github.com/cdexswzaq0110/DSA"
+                href="https://github.com/cdexswzaq0110/Data-Structures-Algorithms"
                 target="_blank"
                 rel="noreferrer"
                 data-cursor-label="View"
-                aria-label="Open Data Structures and Algorithms on GitHub"
+                aria-label="Open Data Structures &amp; Algorithms on GitHub"
               >
                 <div class="project-visual visual-algorithms" data-tilt>
                   <img
@@ -340,7 +358,7 @@
                 </div>
                 <div class="project-body">
                   <div>
-                    <p class="project-index">02 / Computer Science</p>
+                    <p class="project-index">02 / Computer science</p>
                     <h3>Data Structures &amp; Algorithms</h3>
                   </div>
                   <span class="project-arrow" aria-hidden="true">↗</span>
@@ -354,154 +372,72 @@
                   <li>Algorithms</li>
                   <li>Problem Solving</li>
                 </ul>
+                <p class="project-source"><span>Data-Structures-Algorithms</span><span>GitHub ↗</span></p>
               </a>
             </article>
 
-            <article class="project-card" data-tags="foundations">
+            <article class="project-card" id="project-serendipity" tabindex="-1" data-tags="backend">
               <a
-                href="https://github.com/cdexswzaq0110/Arduino_obstacle_avoidance"
+                href="https://github.com/cdexswzaq0110/Serendipity-Epiphany"
                 target="_blank"
                 rel="noreferrer"
                 data-cursor-label="View"
-                aria-label="Open ESP8266 Distance System on GitHub"
+                aria-label="Open Serendipity–Epiphany on GitHub"
               >
-                <div class="project-visual visual-embedded" data-tilt>
+                <div class="project-visual visual-serendipity" data-tilt>
                   <img
-                    src="assets/embedded-system.webp"
+                    src="assets/serendipity-epiphany.webp"
                     width="1448"
                     height="1086"
                     loading="lazy"
-                    alt="Refined ultrasonic distance sensor and embedded controller"
+                    alt="Development fragments passing through evidence frames and an ablation gate into reusable rule cards"
                   />
                 </div>
                 <div class="project-body">
                   <div>
-                    <p class="project-index">03 / Embedded</p>
-                    <h3>ESP8266 Distance System</h3>
+                    <p class="project-index">03 / Engineering workflows</p>
+                    <h3>Serendipity–Epiphany</h3>
                   </div>
                   <span class="project-arrow" aria-hidden="true">↗</span>
                 </div>
                 <p class="project-description">
-                  An IoT distance measurement system with ultrasonic sensing,
-                  low-pass filtering, buzzer feedback, and a Wi-Fi display.
+                  An evidence-driven engineering harness that turns recurring development
+                  events into lessons, ablation-tested rules, and reusable agent workflows.
                 </p>
                 <ul class="tag-list" aria-label="Technologies">
-                  <li>Embedded C++</li>
-                  <li>ESP8266</li>
-                  <li>IoT</li>
+                  <li>Shell</li>
+                  <li>Agent Workflows</li>
+                  <li>Evidence</li>
                 </ul>
+                <p class="project-source"><span>Serendipity-Epiphany</span><span>GitHub ↗</span></p>
               </a>
             </article>
 
-            <article class="project-card" data-tags="ml backend">
-              <a
-                href="https://github.com/cdexswzaq0110/VeloGuard"
-                target="_blank"
-                rel="noreferrer"
-                data-cursor-label="View"
-                aria-label="Open VeloGuard on GitHub"
-              >
-                <div class="project-visual visual-veloguard" data-tilt>
-                  <img
-                    src="assets/veloguard.webp"
-                    width="1448"
-                    height="1086"
-                    loading="lazy"
-                    alt="Architectural bike-share forecasting and station rebalancing model"
-                  />
+            <article class="project-card" id="project-agent-kernel" tabindex="-1" data-tags="backend">
+              <a href="https://github.com/cdexswzaq0110/Agent-System-Design" target="_blank" rel="noreferrer"
+                data-cursor-label="View" aria-label="Open Agent Kernel on GitHub">
+                <div class="project-visual" data-tilt>
+                  <img src="assets/agent-kernel.webp" width="1448" height="1086" loading="lazy" decoding="async"
+                    alt="A central scheduling hub linking three isolated work modules, shared context wafers, and a review gate" />
                 </div>
                 <div class="project-body">
                   <div>
-                    <p class="project-index">04 / Forecasting</p>
-                    <h3>VeloGuard</h3>
+                    <p class="project-index">04 / Multi-agent runtime</p>
+                    <h3>Agent Kernel</h3>
                   </div>
                   <span class="project-arrow" aria-hidden="true">↗</span>
                 </div>
-                <p class="project-description">
-                  Uncertainty-aware bike-share demand forecasting and constrained
-                  station rebalancing decision support.
-                </p>
+                <p class="project-description">An OS-inspired multi-agent runtime with context management, cost-aware routing, isolated dispatch, and supervised evaluation.</p>
                 <ul class="tag-list" aria-label="Technologies">
                   <li>Python</li>
-                  <li>FastAPI</li>
-                  <li>Time Series</li>
+                  <li>Agent Runtime</li>
+                  <li>Evaluation</li>
                 </ul>
+                <p class="project-source"><span>Agent-System-Design</span><span>GitHub ↗</span></p>
               </a>
             </article>
 
-            <article class="project-card" data-tags="ml backend">
-              <a
-                href="https://github.com/cdexswzaq0110/titanic-ml-control-tower"
-                target="_blank"
-                rel="noreferrer"
-                data-cursor-label="View"
-                aria-label="Open Titanic ML Control Tower on GitHub"
-              >
-                <div class="project-visual visual-control-tower" data-tilt>
-                  <img
-                    src="assets/titanic-control-tower.webp"
-                    width="1448"
-                    height="1086"
-                    loading="lazy"
-                    alt="Sculptural machine-learning model comparison control console"
-                  />
-                </div>
-                <div class="project-body">
-                  <div>
-                    <p class="project-index">05 / ML Platform</p>
-                    <h3>Titanic ML Control Tower</h3>
-                  </div>
-                  <span class="project-arrow" aria-hidden="true">↗</span>
-                </div>
-                <p class="project-description">
-                  A Flask dashboard for training, comparing, managing, and serving
-                  scikit-learn models through a REST API.
-                </p>
-                <ul class="tag-list" aria-label="Technologies">
-                  <li>Flask</li>
-                  <li>Scikit-learn</li>
-                  <li>REST API</li>
-                </ul>
-              </a>
-            </article>
-
-            <article class="project-card" data-tags="ml">
-              <a
-                href="https://github.com/cdexswzaq0110/House-Prices-Advanced-Regression-Techniques"
-                target="_blank"
-                rel="noreferrer"
-                data-cursor-label="View"
-                aria-label="Open House Prices Advanced Regression Techniques on GitHub"
-              >
-                <div class="project-visual visual-house-prices" data-tilt>
-                  <img
-                    src="assets/house-prices.webp"
-                    width="1448"
-                    height="1086"
-                    loading="lazy"
-                    alt="Miniature house, valuation steps, and ensemble model weights"
-                  />
-                </div>
-                <div class="project-body">
-                  <div>
-                    <p class="project-index">06 / Regression</p>
-                    <h3>House Prices</h3>
-                  </div>
-                  <span class="project-arrow" aria-hidden="true">↗</span>
-                </div>
-                <p class="project-description">
-                  A reproducible Kaggle regression pipeline with repeated CV, OOF
-                  ensembles, calibration, and MLflow experiment tracking.
-                </p>
-                <ul class="tag-list" aria-label="Technologies">
-                  <li>Python</li>
-                  <li>MLflow</li>
-                  <li>Ensemble Learning</li>
-                </ul>
-              </a>
-            </article>
-
-            <article class="project-card" data-tags="ml backend">
+            <article class="project-card" id="project-ordostack" tabindex="-1" data-tags="ml backend">
               <a
                 href="https://github.com/cdexswzaq0110/Ordostack"
                 target="_blank"
@@ -520,7 +456,7 @@
                 </div>
                 <div class="project-body">
                   <div>
-                    <p class="project-index">07 / Product System</p>
+                    <p class="project-index">05 / Planning systems</p>
                     <h3>OrdoStack</h3>
                   </div>
                   <span class="project-arrow" aria-hidden="true">↗</span>
@@ -534,10 +470,183 @@
                   <li>TypeScript</li>
                   <li>Docker</li>
                 </ul>
+                <p class="project-source"><span>Ordostack</span><span>GitHub ↗</span></p>
               </a>
             </article>
 
-            <article class="project-card" data-tags="ml backend">
+            <article class="project-card" id="project-veloguard" tabindex="-1" data-tags="ml backend">
+              <a
+                href="https://github.com/cdexswzaq0110/VeloGuard"
+                target="_blank"
+                rel="noreferrer"
+                data-cursor-label="View"
+                aria-label="Open VeloGuard on GitHub"
+              >
+                <div class="project-visual visual-veloguard" data-tilt>
+                  <img
+                    src="assets/veloguard.webp"
+                    width="1448"
+                    height="1086"
+                    loading="lazy"
+                    alt="Architectural bike-share forecasting and station rebalancing model"
+                  />
+                </div>
+                <div class="project-body">
+                  <div>
+                    <p class="project-index">06 / Demand forecasting</p>
+                    <h3>VeloGuard</h3>
+                  </div>
+                  <span class="project-arrow" aria-hidden="true">↗</span>
+                </div>
+                <p class="project-description">
+                  Uncertainty-aware bike-share demand forecasting and constrained
+                  station rebalancing decision support.
+                </p>
+                <ul class="tag-list" aria-label="Technologies">
+                  <li>Python</li>
+                  <li>FastAPI</li>
+                  <li>Time Series</li>
+                </ul>
+                <p class="project-source"><span>VeloGuard</span><span>GitHub ↗</span></p>
+              </a>
+            </article>
+
+            <article class="project-card" id="project-esp8266" tabindex="-1" data-tags="foundations">
+              <a
+                href="https://github.com/cdexswzaq0110/Arduino_obstacle_avoidance"
+                target="_blank"
+                rel="noreferrer"
+                data-cursor-label="View"
+                aria-label="Open ESP8266 Distance Sensor on GitHub"
+              >
+                <div class="project-visual visual-embedded" data-tilt>
+                  <img
+                    src="assets/embedded-system.webp"
+                    width="1448"
+                    height="1086"
+                    loading="lazy"
+                    alt="Refined ultrasonic distance sensor and embedded controller"
+                  />
+                </div>
+                <div class="project-body">
+                  <div>
+                    <p class="project-index">07 / Embedded systems</p>
+                    <h3>ESP8266 Distance Sensor</h3>
+                  </div>
+                  <span class="project-arrow" aria-hidden="true">↗</span>
+                </div>
+                <p class="project-description">
+                  An IoT distance measurement system with ultrasonic sensing,
+                  low-pass filtering, buzzer feedback, and a Wi-Fi display.
+                </p>
+                <ul class="tag-list" aria-label="Technologies">
+                  <li>Embedded C++</li>
+                  <li>ESP8266</li>
+                  <li>IoT</li>
+                </ul>
+                <p class="project-source"><span>Arduino_obstacle_avoidance</span><span>GitHub ↗</span></p>
+              </a>
+            </article>
+
+            <article class="project-card" id="project-indoor-positioning" tabindex="-1" data-tags="ml backend">
+              <a href="https://github.com/cdexswzaq0110/Indoor-Positioning-System" target="_blank" rel="noreferrer"
+                data-cursor-label="View" aria-label="Open Indoor Positioning on GitHub">
+                <div class="project-visual" data-tilt>
+                  <img src="assets/indoor-positioning.webp" width="1448" height="1086" loading="lazy" decoding="async"
+                    alt="A camera observing floor landmarks in a limestone room model beside a matching coordinate map" />
+                </div>
+                <div class="project-body">
+                  <div>
+                    <p class="project-index">08 / Visual localization</p>
+                    <h3>Indoor Positioning</h3>
+                  </div>
+                  <span class="project-arrow" aria-hidden="true">↗</span>
+                </div>
+                <p class="project-description">Camera-based floor-landmark recognition, mapped to indoor coordinates and streamed to a live map through FastAPI and WebSockets.</p>
+                <ul class="tag-list" aria-label="Technologies">
+                  <li>YOLO</li>
+                  <li>FastAPI</li>
+                  <li>WebSockets</li>
+                </ul>
+                <p class="project-source"><span>Indoor-Positioning-System</span><span>GitHub ↗</span></p>
+              </a>
+            </article>
+
+            <article class="project-card" id="project-titanic" tabindex="-1" data-tags="ml backend">
+              <a
+                href="https://github.com/cdexswzaq0110/Titanic-ML-Control-Tower"
+                target="_blank"
+                rel="noreferrer"
+                data-cursor-label="View"
+                aria-label="Open Titanic Control Tower on GitHub"
+              >
+                <div class="project-visual visual-control-tower" data-tilt>
+                  <img
+                    src="assets/titanic-control-tower.webp"
+                    width="1448"
+                    height="1086"
+                    loading="lazy"
+                    alt="Sculptural machine-learning model comparison control console"
+                  />
+                </div>
+                <div class="project-body">
+                  <div>
+                    <p class="project-index">09 / ML operations</p>
+                    <h3>Titanic Control Tower</h3>
+                  </div>
+                  <span class="project-arrow" aria-hidden="true">↗</span>
+                </div>
+                <p class="project-description">
+                  A Flask dashboard for training, comparing, managing, and serving
+                  scikit-learn models through a REST API.
+                </p>
+                <ul class="tag-list" aria-label="Technologies">
+                  <li>Flask</li>
+                  <li>Scikit-learn</li>
+                  <li>REST API</li>
+                </ul>
+                <p class="project-source"><span>Titanic-ML-Control-Tower</span><span>GitHub ↗</span></p>
+              </a>
+            </article>
+
+            <article class="project-card" id="project-house-prices" tabindex="-1" data-tags="ml">
+              <a
+                href="https://github.com/cdexswzaq0110/House-Prices-Advanced-Regression-Techniques"
+                target="_blank"
+                rel="noreferrer"
+                data-cursor-label="View"
+                aria-label="Open House Prices on GitHub"
+              >
+                <div class="project-visual visual-house-prices" data-tilt>
+                  <img
+                    src="assets/house-prices.webp"
+                    width="1448"
+                    height="1086"
+                    loading="lazy"
+                    alt="Miniature house, valuation steps, and ensemble model weights"
+                  />
+                </div>
+                <div class="project-body">
+                  <div>
+                    <p class="project-index">10 / Regression</p>
+                    <h3>House Prices</h3>
+                  </div>
+                  <span class="project-arrow" aria-hidden="true">↗</span>
+                </div>
+                <p class="project-description">
+                  A reproducible Kaggle regression pipeline with repeated CV, OOF
+                  ensembles, calibration, and MLflow experiment tracking.
+                </p>
+                <ul class="tag-list" aria-label="Technologies">
+                  <li>Python</li>
+                  <li>MLflow</li>
+                  <li>Ensemble Learning</li>
+                </ul>
+                <p class="project-source"><span>House-Prices-Advanced-Regression-Techniques</span><span>GitHub ↗</span></p>
+              </a>
+            </article>
+
+            <article class="project-card" id="project-signalweave" tabindex="-1" data-tags="ml backend">
               <a
                 href="https://github.com/cdexswzaq0110/SignalWeave"
                 target="_blank"
@@ -547,16 +656,16 @@
               >
                 <div class="project-visual visual-signalweave" data-tilt>
                   <img
-                    src="assets/signalweave.webp"
+                    src="assets/signalweave-v2.webp"
                     width="1448"
                     height="1086"
                     loading="lazy"
-                    alt="Four retrieval spools feeding an auditable ranking drum and constrained recommendation slate"
+                    alt="Four candidate channels merging into a weighted selector and a constrained recommendation tray"
                   />
                 </div>
                 <div class="project-body">
                   <div>
-                    <p class="project-index">08 / Recommender Systems</p>
+                    <p class="project-index">11 / Recommendation systems</p>
                     <h3>SignalWeave</h3>
                   </div>
                   <span class="project-arrow" aria-hidden="true">↗</span>
@@ -570,12 +679,13 @@
                   <li>FastAPI</li>
                   <li>Recommender Systems</li>
                 </ul>
+                <p class="project-source"><span>SignalWeave</span><span>GitHub ↗</span></p>
               </a>
             </article>
 
-            <article class="project-card" data-tags="ml">
+            <article class="project-card" id="project-skin-lesion" tabindex="-1" data-tags="ml">
               <a
-                href="https://github.com/cdexswzaq0110/skin-lesion-vision"
+                href="https://github.com/cdexswzaq0110/Skin-Lesion-Vision"
                 target="_blank"
                 rel="noreferrer"
                 data-cursor-label="View"
@@ -592,7 +702,7 @@
                 </div>
                 <div class="project-body">
                   <div>
-                    <p class="project-index">09 / Computer Vision</p>
+                    <p class="project-index">12 / Computer vision</p>
                     <h3>Skin Lesion Vision</h3>
                   </div>
                   <span class="project-arrow" aria-hidden="true">↗</span>
@@ -606,82 +716,35 @@
                   <li>Interpretability</li>
                   <li>Validation</li>
                 </ul>
+                <p class="project-source"><span>Skin-Lesion-Vision</span><span>GitHub ↗</span></p>
               </a>
             </article>
 
-            <article class="project-card" data-tags="backend">
-              <a
-                href="https://github.com/cdexswzaq0110/Serendipity-Epiphany"
-                target="_blank"
-                rel="noreferrer"
-                data-cursor-label="View"
-                aria-label="Open Serendipity Epiphany on GitHub"
-              >
-                <div class="project-visual visual-serendipity" data-tilt>
-                  <img
-                    src="assets/serendipity-epiphany.webp"
-                    width="1448"
-                    height="1086"
-                    loading="lazy"
-                    alt="Development fragments passing through evidence frames and an ablation gate into reusable rule cards"
-                  />
+            <article class="project-card" id="project-thermoforge" tabindex="-1" data-tags="ml">
+              <a href="https://github.com/cdexswzaq0110/ThermoForge" target="_blank" rel="noreferrer"
+                data-cursor-label="View" aria-label="Open ThermoForge on GitHub">
+                <div class="project-visual" data-tilt>
+                  <img src="assets/thermoforge.webp" width="1448" height="1086" loading="lazy" decoding="async"
+                    alt="Copper heat sources on a planar limestone board beneath a predicted thermal field and a contact probe" />
                 </div>
                 <div class="project-body">
                   <div>
-                    <p class="project-index">10 / Engineering Workflow</p>
-                    <h3>Serendipity — Epiphany</h3>
+                    <p class="project-index">13 / Physics-informed ML</p>
+                    <h3>ThermoForge</h3>
                   </div>
                   <span class="project-arrow" aria-hidden="true">↗</span>
                 </div>
-                <p class="project-description">
-                  An evidence-driven engineering harness that turns recurring development
-                  events into lessons, ablation-tested rules, and reusable agent workflows.
-                </p>
+                <p class="project-description">A neural surrogate for 2D steady-state heat conduction, with physics-consistency checks, out-of-distribution evaluation, and an evidence-graded design copilot.</p>
                 <ul class="tag-list" aria-label="Technologies">
-                  <li>Shell</li>
-                  <li>Agent Workflows</li>
-                  <li>Evidence</li>
+                  <li>PyTorch</li>
+                  <li>Heat Conduction</li>
+                  <li>Validation</li>
                 </ul>
+                <p class="project-source"><span>ThermoForge</span><span>GitHub ↗</span></p>
               </a>
             </article>
 
-            <article class="project-card" data-tags="foundations">
-              <a
-                href="https://github.com/cdexswzaq0110/megumi-fine_-clawd-pets-"
-                target="_blank"
-                rel="noreferrer"
-                data-cursor-label="View"
-                aria-label="Open Megumi Fine Clawd Pets on GitHub"
-              >
-                <div class="project-visual visual-megumi" data-tilt>
-                  <img
-                    src="assets/megumi-fine.webp"
-                    width="1448"
-                    height="1086"
-                    loading="lazy"
-                    alt="Handcrafted Megumi chibi desktop pet beside a mechanical animation-state dial"
-                  />
-                </div>
-                <div class="project-body">
-                  <div>
-                    <p class="project-index">11 / Creative Coding</p>
-                    <h3>Megumi Fine</h3>
-                  </div>
-                  <span class="project-arrow" aria-hidden="true">↗</span>
-                </div>
-                <p class="project-description">
-                  A chibi desktop pet packaged for Codex and Clawd on Desk, with pixel-art
-                  animation states, mini mode, validation artifacts, and a portable theme.
-                </p>
-                <ul class="tag-list" aria-label="Technologies">
-                  <li>Pixel Art</li>
-                  <li>Desktop Pet</li>
-                  <li>Animation</li>
-                </ul>
-              </a>
-            </article>
-
-            <article class="project-card" data-tags="archive">
+            <article class="project-card" id="project-more-projects" tabindex="-1" data-tags="archive">
               <a
                 href="https://github.com/cdexswzaq0110?tab=repositories"
                 target="_blank"
@@ -700,7 +763,7 @@
                 </div>
                 <div class="project-body">
                   <div>
-                    <p class="project-index">12 / Archive</p>
+                    <p class="project-index">14 / Repository archive</p>
                     <h3>More Projects</h3>
                   </div>
                   <span class="project-arrow" aria-hidden="true">↗</span>
@@ -714,8 +777,10 @@
                   <li>Learning</li>
                   <li>Experiments</li>
                 </ul>
+                <p class="project-source"><span>All repositories</span><span>GitHub ↗</span></p>
               </a>
             </article>
+            </div>
           </div>
         </div>
       </section>

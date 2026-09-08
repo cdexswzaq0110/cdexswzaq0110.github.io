@@ -56,6 +56,7 @@ const projectCards = [...document.querySelectorAll(".project-card")];
 const projectVisuals = [...document.querySelectorAll(".project-visual")];
 const projectCounter = document.querySelector("[data-project-count]");
 const projectTotal = document.querySelector("[data-project-total]");
+const projectJumps = [...document.querySelectorAll("[data-project-jump]")];
 
 let activeProjects = "";
 
@@ -72,6 +73,13 @@ function updateActiveProjects(cards) {
 
   activeProjects = label;
   projectCards.forEach((card) => card.classList.toggle("is-active", cards.includes(card)));
+  projectJumps.forEach((link) => {
+    if (cards.some((card) => card.id === `project-${link.dataset.projectJump}`)) {
+      link.setAttribute("aria-current", "location");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  });
 
   if (!projectCounter) return;
 
@@ -95,7 +103,7 @@ function updateScrollProgress() {
 }
 
 function updateMotionEffects() {
-  if (!hero || !motion) return;
+  if (!hero) return;
 
   const heroRange = Math.max(hero.offsetHeight - window.innerHeight * 0.25, 1);
   const heroProgress = clamp(window.scrollY / heroRange, 0, 1);
@@ -296,7 +304,14 @@ function goToAnchor(hash) {
 
   if (!anchor) return false;
 
-  const top = anchor.getBoundingClientRect().top + window.scrollY - (anchor === hero ? 0 : headerOffset());
+  const toolbar = document.querySelector(".work-toolbar");
+  const offset = anchor.matches(".project-card") && toolbar
+    ? parseFloat(getComputedStyle(toolbar).top) + toolbar.offsetHeight + 24
+    : headerOffset();
+  // Use layout coordinates: an in-flight reveal transform must not shift the destination.
+  let top = 0;
+  for (let node = anchor; node; node = node.offsetParent) top += node.offsetTop;
+  top -= anchor === hero ? 0 : offset;
 
   if (smoothScroll) smoothScroll.scrollTo(top);
   else window.scrollTo({ top, behavior: motion ? "smooth" : "auto" });
@@ -740,8 +755,15 @@ function initMarquee() {
 
 function initFilter() {
   const chips = [...document.querySelectorAll("[data-filter]")];
+  const status = document.querySelector("[data-filter-status]");
 
   if (!projectGrid || !chips.length) return;
+
+  chips.forEach((chip) => {
+    const count = projectCards.filter((card) => chip.dataset.filter === "all" ||
+      (card.dataset.tags || "").split(/\s+/).includes(chip.dataset.filter)).length;
+    chip.querySelector("sup").textContent = String(count).padStart(2, "0");
+  });
 
   function apply(filter) {
     const before = new Map(projectCards.map((card) => [card, card.getBoundingClientRect()]));
@@ -762,7 +784,17 @@ function initFilter() {
 
     const shown = visibleCards();
 
+    projectJumps.forEach((link) => {
+      link.closest("li").hidden = !shown.some((card) => card.id === `project-${link.dataset.projectJump}`);
+    });
+    if (status) {
+      const selected = chips.find((chip) => chip.dataset.filter === filter);
+      status.textContent = `${shown.length} projects · ${selected.firstChild.textContent.trim()}`;
+    }
+
     if (projectTotal) projectTotal.textContent = String(shown.length).padStart(2, "0");
+    activeProjects = "";
+    updateActiveProjects(shown.slice(0, 1));
 
     if (!motion || typeof projectGrid.animate !== "function") {
       updatePageState();
@@ -801,6 +833,28 @@ function initFilter() {
   }
 
   chips.forEach((chip) => chip.addEventListener("click", () => apply(chip.dataset.filter)));
+}
+
+function initProjectDirectory() {
+  const directory = document.querySelector("[data-work-directory]");
+  if (!directory) return;
+
+  const wide = window.matchMedia("(min-width: 1100px)");
+  const syncDirectory = () => { directory.open = wide.matches; };
+  const syncToolbar = () => {
+    root.style.setProperty("--work-toolbar-top", `${document.querySelector(".site-header").offsetHeight}px`);
+  };
+  syncDirectory();
+  syncToolbar();
+  wide.addEventListener("change", syncDirectory);
+  window.addEventListener("resize", syncToolbar);
+
+  projectJumps.forEach((link) => link.addEventListener("click", (event) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (!wide.matches) directory.open = false;
+    const card = document.getElementById(`project-${link.dataset.projectJump}`);
+    card?.focus({ preventScroll: true });
+  }));
 }
 
 /* ---------------------------------------------------------------
@@ -1407,6 +1461,7 @@ function initPageTransition() {
    --------------------------------------------------------------- */
 
 initFilter();
+initProjectDirectory();
 initNavSheet();
 
 if (!motion) {
