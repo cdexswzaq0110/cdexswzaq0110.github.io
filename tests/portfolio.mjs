@@ -103,6 +103,18 @@ for (const [, filter, total] of filters) {
 for (const [file, canonical] of [["index.html", ""], ["resume.html", "resume.html"], ["links.html", "links.html"]]) {
   assert.ok(readFileSync(resolve(root, file), "utf8").includes(`rel="canonical" href="https://cdexswzaq0110.github.io/${canonical}"`));
 }
+/* The lab intro states a count in prose; it drifted once when cards were
+   added, so hold it to the number of cards actually on the page. */
+const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight"];
+const ZH_WORDS = ["零", "一", "二", "三", "四", "五", "六", "七", "八"];
+const labCards = [...html.matchAll(/class="lab-card/g)].length;
+const labIntro = html.match(/<p data-split="words" data-zh="([^"]+)">([^<]+)<\/p>\s*<p class="section-count">No libraries/);
+assert.ok(labIntro, "Lab intro paragraph not found");
+assert.ok(labIntro[2].startsWith(`${WORDS[labCards]} ideas`),
+  `Lab intro says "${labIntro[2].split(" ")[0]}" but there are ${labCards} cards`);
+assert.ok(labIntro[1].startsWith(`${ZH_WORDS[labCards]}個`),
+  `Chinese lab intro disagrees with ${labCards} cards`);
+
 assert.ok(statSync(resolve(root, "google02af818ae84c33ec.html")).size > 0);
 assert.ok(readFileSync(resolve(root, "robots.txt"), "utf8").includes("Sitemap: https://cdexswzaq0110.github.io/sitemap.xml"));
-console.log("PASS: 14 ordered projects, unique covers, repository links, filter totals, and SEO files.");
+console.log("PASS: 14 ordered projects, unique covers, repository links, filter totals, lab count, and SEO files.");
