@@ -9,7 +9,18 @@ const root = document.documentElement;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
 const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
-const motion = !reducedMotion.matches;
+
+/* The OS setting is the default. A visitor who asks for the full motion layer
+   anyway is remembered, and only ever for their own browser. */
+function motionChoice() {
+  try {
+    return window.localStorage.getItem("th-motion");
+  } catch (error) {
+    return null;
+  }
+}
+
+const motion = motionChoice() === "on" ? true : !reducedMotion.matches;
 
 const clamp = (value, minimum, maximum) => Math.min(Math.max(value, minimum), maximum);
 const lerp = (from, to, amount) => from + (to - from) * amount;
@@ -657,6 +668,11 @@ function initHeroCanvas() {
   /* The field drifts on touch too — a static grid reads as a texture, not as
      motion. The observer below is what keeps the cost down: the loop only runs
      while the hero is actually on screen, which on a phone is one screenful. */
+  /* Start drifting straight away rather than waiting on the observer — if that
+     callback is delayed or never arrives, the field must not sit frozen. The
+     observer's job is only to pause it once the hero leaves the viewport. */
+  stop = addFrameTask(draw);
+
   if ("IntersectionObserver" in window) {
     new IntersectionObserver(
       ([entry]) => {
@@ -668,8 +684,6 @@ function initHeroCanvas() {
       },
       { threshold: 0 },
     ).observe(hero);
-  } else {
-    stop = addFrameTask(draw);
   }
 }
 
@@ -1425,7 +1439,33 @@ function initNavSheet() {
 }
 
 /* ---------------------------------------------------------------
-   14. Page transitions
+   14. Motion opt-in
+   --------------------------------------------------------------- */
+
+function initMotionToggle() {
+  const toggle = document.querySelector("[data-motion-toggle]");
+
+  if (!toggle) return;
+
+  const state = toggle.querySelector("[data-motion-state]");
+
+  toggle.setAttribute("aria-pressed", String(motion));
+  if (state) state.textContent = motion ? "On" : "Off";
+
+  toggle.addEventListener("click", () => {
+    try {
+      window.localStorage.setItem("th-motion", motion ? "off" : "on");
+    } catch (error) {
+      /* private mode — the choice simply will not persist */
+    }
+
+    /* Half the motion layer is decided at boot, so re-run it cleanly. */
+    window.location.reload();
+  });
+}
+
+/* ---------------------------------------------------------------
+   15. Page transitions
    --------------------------------------------------------------- */
 
 function initPageTransition() {
@@ -1462,13 +1502,14 @@ function initPageTransition() {
 }
 
 /* ---------------------------------------------------------------
-   15. Boot
+   16. Boot
    --------------------------------------------------------------- */
 
 initFilter();
 initProjectDirectory();
 initNavSheet();
 initHeroCanvas();
+initMotionToggle();
 
 if (!motion) {
   root.classList.remove("is-loading");

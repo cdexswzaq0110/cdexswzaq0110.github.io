@@ -2367,90 +2367,165 @@ h3,
   }
 }
 
+/* Reduced motion is honoured by default. Every rule is scoped to
+   :not(.motion-on) so a visitor can knowingly opt back into the full motion
+   layer; without JavaScript the class never appears and this applies in full. */
 @media (prefers-reduced-motion: reduce) {
-  html {
+  html:not(.motion-on) {
     scroll-behavior: auto;
   }
 
-  .scroll-progress,
-  .cursor,
-  .preloader,
-  .link-preview {
+  :root:not(.motion-on) .scroll-progress,
+  :root:not(.motion-on) .cursor,
+  :root:not(.motion-on) .preloader,
+  :root:not(.motion-on) .link-preview {
     display: none !important;
   }
 
   /* A still grain and a still dot field are texture, not motion. Reduced
      motion should take the drift away, not the surface. */
-  .grain {
+  :root:not(.motion-on) .grain {
     animation: none !important;
   }
 
-  .marquee {
+  :root:not(.motion-on) .marquee {
     transform: none !important;
   }
 
-  .project-grid {
+  :root:not(.motion-on) .project-grid {
     transform: none !important;
   }
 
-  .status-pill i,
-  .hero-scroll-line::after {
+  :root:not(.motion-on) .status-pill i,
+  :root:not(.motion-on) .hero-scroll-line::after {
     animation: none;
   }
 
-  .hero-visual::before,
-  .portrait-frame,
-  .portrait-frame img,
-  .project-visual,
-  .project-visual img {
+  :root:not(.motion-on) .hero-visual::before,
+  :root:not(.motion-on) .portrait-frame,
+  :root:not(.motion-on) .portrait-frame img,
+  :root:not(.motion-on) .project-visual,
+  :root:not(.motion-on) .project-visual img {
     transform: none !important;
   }
 
-  .portrait-media::before {
+  :root:not(.motion-on) .portrait-media::before {
     display: none;
   }
 
-  .hero-copy {
+  :root:not(.motion-on) .hero-copy {
     opacity: 1 !important;
     transform: none !important;
   }
 
-  .motion-ready .hero-reveal,
-  .motion-ready .reveal {
+  :root:not(.motion-on) .motion-ready .hero-reveal,
+  :root:not(.motion-on) .motion-ready .reveal {
     opacity: 1 !important;
     transform: none !important;
   }
 
-  .motion-ready .section-heading span,
-  .motion-ready .skill-column::before,
-  .motion-ready .resume-block::before {
+  :root:not(.motion-on) .motion-ready .section-heading span,
+  :root:not(.motion-on) .motion-ready .skill-column::before,
+  :root:not(.motion-on) .motion-ready .resume-block::before {
     transform: scaleX(1) !important;
   }
 
-  .motion-ready .project-visual::before {
+  :root:not(.motion-on) .motion-ready .project-visual::before {
     display: none;
   }
 
-  .motion-ready .about-reveal .about-line {
+  :root:not(.motion-on) .motion-ready .about-reveal .about-line {
     opacity: 1 !important;
     clip-path: none !important;
     transform: none !important;
   }
 
-  .split-line > .split-inner,
-  .split-word > .split-inner,
-  .split-chars .split-char {
+  :root:not(.motion-on) .split-line > .split-inner,
+  :root:not(.motion-on) .split-word > .split-inner,
+  :root:not(.motion-on) .split-chars .split-char {
     opacity: 1 !important;
     transform: none !important;
   }
 
-  *,
-  *::before,
-  *::after {
+  :root:not(.motion-on) *,
+  :root:not(.motion-on) *::before,
+  :root:not(.motion-on) *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ---------------------------------------------------------------
+   Motion opt-in control
+   --------------------------------------------------------------- */
+
+.motion-toggle {
+  display: none;
+  /* Its own row, so the three-column footer above it is untouched. */
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-top: 0.4rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: none;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  scale: var(--press, 1);
+  transition: color 300ms ease, scale 160ms var(--ease-out);
+}
+
+/* Only shown to visitors the setting actually affects. */
+.js .motion-toggle {
+  display: inline-flex;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .motion-toggle {
+    display: none;
+  }
+}
+
+.motion-toggle:active {
+  --press: 0.96;
+}
+
+.motion-toggle:hover {
+  color: var(--white);
+}
+
+.motion-toggle i {
+  width: 1.9rem;
+  height: 0.85rem;
+  flex: none;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  position: relative;
+}
+
+.motion-toggle i::after {
+  position: absolute;
+  top: 50%;
+  left: 0.16rem;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+  translate: 0 -50%;
+  transition: translate 260ms var(--ease-out);
+}
+
+.motion-on .motion-toggle i::after {
+  translate: 0.9rem -50%;
 }
 
 /* Resume PDF viewer */

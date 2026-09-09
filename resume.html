@@ -21,10 +21,19 @@
     <meta property="og:image" content="https://cdexswzaq0110.github.io/assets/system-design.webp" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <link rel="stylesheet" href="styles.css?v=6" />
-    <script src="script.js?v=6" defer></script>
+    <link rel="stylesheet" href="styles.css?v=7" />
+    <script src="script.js?v=7" defer></script>
     <script>
-      document.documentElement.classList.add("js");
+      /* Apply the remembered motion choice before first paint. */
+      (function () {
+        var root = document.documentElement;
+        root.classList.add("js");
+        try {
+          if (window.localStorage.getItem("th-motion") === "on") root.classList.add("motion-on");
+        } catch (error) {
+          /* storage blocked — the OS setting stands */
+        }
+      })();
     </script>
     <script type="application/ld+json">
       {
@@ -205,6 +214,9 @@
         <p>TerryH Huang</p>
         <p>Aspiring Machine Learning Engineer</p>
         <a href="index.html" data-magnetic>Home</a>
+        <button class="motion-toggle" type="button" data-motion-toggle aria-pressed="false">
+          <i aria-hidden="true"></i>Motion <span data-motion-state>Off</span>
+        </button>
       </div>
     </footer>
     <div class="nav-sheet" id="site-menu" data-nav-sheet hidden>

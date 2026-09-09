@@ -39,15 +39,20 @@
     <meta name="twitter:image" content="https://cdexswzaq0110.github.io/assets/system-design.webp" />
 
     <link rel="preload" as="image" href="assets/cappuccino.webp" fetchpriority="high" />
-    <link rel="stylesheet" href="styles.css?v=6" />
-    <script src="script.js?v=6" defer></script>
+    <link rel="stylesheet" href="styles.css?v=7" />
+    <script src="script.js?v=7" defer></script>
     <script>
       /* Set intro + capability flags before first paint to avoid a flash. */
       (function () {
         var root = document.documentElement;
         root.classList.add("js");
         try {
-          var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          var chosen = window.localStorage.getItem("th-motion");
+          if (chosen === "on") root.classList.add("motion-on");
+          var reduce =
+            chosen === "on"
+              ? false
+              : window.matchMedia("(prefers-reduced-motion: reduce)").matches;
           var seen = window.sessionStorage.getItem("th-intro") === "1";
           if (!reduce && !seen) root.classList.add("is-loading");
         } catch (error) {
@@ -930,6 +935,9 @@
             <circle cx="18" cy="18" r="16" class="to-top-ring-value" />
           </svg>
         </a>
+        <button class="motion-toggle" type="button" data-motion-toggle aria-pressed="false">
+          <i aria-hidden="true"></i>Motion <span data-motion-state>Off</span>
+        </button>
       </div>
     </footer>
     <div class="nav-sheet" id="site-menu" data-nav-sheet hidden>
