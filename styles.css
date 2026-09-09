@@ -202,11 +202,9 @@ h3,
    Film grain
    --------------------------------------------------------------- */
 
+/* The grain is texture, so it is not gated on the motion layer — only its
+   drift is. That keeps the surface for reduced-motion and no-JS visitors. */
 .grain {
-  display: none;
-}
-
-.motion-ready .grain {
   position: fixed;
   inset: -50%;
   z-index: 80;
@@ -216,6 +214,9 @@ h3,
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
   opacity: 0.05;
   pointer-events: none;
+}
+
+.motion-ready .grain {
   animation: grain-shift 6s steps(10) infinite;
   will-change: transform;
 }
@@ -560,6 +561,11 @@ h3,
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+/* Only the motion layer fades it in behind the intro; without JS or with
+   reduced motion it is simply there. */
+.motion-ready .hero-canvas {
   opacity: 0;
   transition: opacity 1200ms ease 200ms;
 }
@@ -2334,14 +2340,7 @@ h3,
   }
 }
 
-/* Battery: the dot field and grain are pointer-driven flourishes. On touch the
-   canvas is painted once (static texture, no rAF) and the grain stops moving. */
 @media (hover: none), (pointer: coarse) {
-  .motion-ready .grain {
-    animation: none;
-    will-change: auto;
-  }
-
   .marquee.is-auto {
     animation: marquee-scroll var(--marquee-duration, 24s) linear infinite;
     transform: none;
@@ -2374,12 +2373,16 @@ h3,
   }
 
   .scroll-progress,
-  .grain,
-  .hero-canvas,
   .cursor,
   .preloader,
   .link-preview {
     display: none !important;
+  }
+
+  /* A still grain and a still dot field are texture, not motion. Reduced
+     motion should take the drift away, not the surface. */
+  .grain {
+    animation: none !important;
   }
 
   .marquee {

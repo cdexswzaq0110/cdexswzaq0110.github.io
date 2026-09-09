@@ -627,6 +627,9 @@ function initHeroCanvas() {
   }
 
   resize();
+  /* Paint immediately so the field is never blank while we wait for the
+     observer below to start the loop. */
+  draw(1, performance.now());
 
   hero.addEventListener("pointermove", (event) => {
     const bounds = hero.getBoundingClientRect();
@@ -642,16 +645,18 @@ function initHeroCanvas() {
 
   window.addEventListener("resize", () => {
     resize();
-    if (coarsePointer) draw(1, performance.now());
+    if (!motion) draw(1, performance.now());
   });
 
-  /* Touch has no pointer for the field to follow — paint one static frame
-     instead of holding a rAF loop open on a phone battery. */
-  if (coarsePointer) {
+  /* Reduced motion keeps the field, loses the drift: one painted frame. */
+  if (!motion) {
     draw(1, performance.now());
     return;
   }
 
+  /* The field drifts on touch too — a static grid reads as a texture, not as
+     motion. The observer below is what keeps the cost down: the loop only runs
+     while the hero is actually on screen, which on a phone is one screenful. */
   if ("IntersectionObserver" in window) {
     new IntersectionObserver(
       ([entry]) => {
@@ -1463,13 +1468,13 @@ function initPageTransition() {
 initFilter();
 initProjectDirectory();
 initNavSheet();
+initHeroCanvas();
 
 if (!motion) {
   root.classList.remove("is-loading");
   document.querySelector("[data-preloader]")?.remove();
 } else {
   initReveals();
-  initHeroCanvas();
   initMarquee();
   initRail();
   initPageTransition();
