@@ -39,8 +39,8 @@
     <meta name="twitter:image" content="https://cdexswzaq0110.github.io/assets/system-design.webp" />
 
     <link rel="preload" as="image" href="assets/cappuccino.webp" fetchpriority="high" />
-    <link rel="stylesheet" href="styles.css?v=15" />
-    <script src="script.js?v=15" defer></script>
+    <link rel="stylesheet" href="styles.css?v=16" />
+    <script src="script.js?v=16" defer></script>
     <script>
       /* Set intro + capability flags before first paint to avoid a flash. */
       (function () {
@@ -202,11 +202,11 @@
           <div class="hero-copy">
             <p class="eyebrow" data-zh="機器學習 · 軟體系統">Machine Learning · Software Systems</p>
             <h1 id="hero-title" data-split="lines">
-              <span class="hero-line" data-zh="打造系統。">Build systems.</span>
-              <span class="hero-line" data-zh="深入鑽研。">Study deeply.</span>
-              <span class="hero-line" data-zh="清楚交付。">Ship clearly.</span>
+              <span class="hero-line" data-zh="把系統做出來。">Build systems.</span>
+              <span class="hero-line" data-zh="把原理讀透。">Study deeply.</span>
+              <span class="hero-line" data-zh="把成果交清楚。">Ship clearly.</span>
             </h1>
-            <p class="hero-lead" data-zh="我是黃樺裕，一位機器學習工程師，把資料、演算法與可靠的軟體連結成實際的專案。">
+            <p class="hero-lead" data-zh="我是黃樺裕，一位持續精進的機器學習工程師，把資料、演算法與可靠的軟體，組合成真正跑得起來的專案。">
               I’m TerryH Huang, an aspiring machine learning engineer connecting data,
               algorithms, and dependable software into practical projects.
             </p>
@@ -243,7 +243,7 @@
         </div>
 
         <a class="hero-scroll" href="#work" aria-label="Scroll to selected work">
-          <span data-zh="向下捲動">Scroll</span>
+          <span data-zh="往下捲">Scroll</span>
           <span class="hero-scroll-line" aria-hidden="true"></span>
         </a>
       </section>
@@ -270,7 +270,7 @@
             <span aria-hidden="true"></span>
           </div>
           <div class="section-intro">
-            <p data-split="words" data-zh="從第一性原理到能運作的系統。<br />這是我做過與研究過的東西。">From first principles to working systems.<br />A collection of things I’ve built and studied.</p>
+            <p data-split="words" data-zh="從基本原理到能跑的系統。<br />這些是我做過，也讀過的東西。">From first principles to working systems.<br />A collection of things I’ve built and studied.</p>
             <p class="section-count">
               <span data-project-count>01</span> / <span data-project-total>14</span> projects
             </p>
@@ -772,7 +772,7 @@
             <span aria-hidden="true"></span>
           </div>
           <div class="section-intro">
-            <p data-split="words" data-zh="五個我反覆回到的概念，在瀏覽器裡實際運行。">Five ideas I keep returning to, running live in the browser.</p>
+            <p data-split="words" data-zh="五個我一再回頭想的題目，直接在瀏覽器裡跑給你看。">Five ideas I keep returning to, running live in the browser.</p>
             <p class="section-count">No libraries · <span data-lab-fps>60</span> fps</p>
           </div>
 
@@ -783,7 +783,7 @@
                 <p class="lab-index" data-zh="01 / 分類">01 / Classification</p>
                 <h3 id="lab-knn-title" data-zh="決策邊界">Decision boundary</h3>
               </div>
-              <p class="lab-copy" data-zh="一個 k-近鄰分類器，每次點擊都重新計算。加入資料點，看邊界如何隨之彎折 —— 這正是讓小的 <em>k</em> 過擬合的偏差–變異權衡。">
+              <p class="lab-copy" data-zh="一個 k-近鄰分類器，每點一次就重算一次。加入資料點，看邊界怎麼跟著彎——小的 <em>k</em> 之所以容易過擬合，靠的正是同一個偏差–變異權衡。">
                 A k-nearest-neighbours classifier, recomputed on every click. Add
                 points and watch the boundary bend around them — the same
                 bias–variance trade-off that makes small <em>k</em> overfit.
@@ -814,7 +814,7 @@
                 <p class="lab-index" data-zh="04 / 注意力">04 / Attention</p>
                 <h3 id="lab-attn-title" data-zh="每個 token 在看什麼">What each token looks at</h3>
               </div>
-              <p class="lab-copy" data-zh="真正的 scaled dot-product attention —— softmax(QK<sup>T</sup>/√d) —— 只是套用在手工挑選的四維向量上。運算與 transformer 完全相同。">
+              <p class="lab-copy" data-zh="真正的 scaled dot-product attention：softmax(QK<sup>T</sup>/√d)。運算和 transformer 跑的完全一樣，只有向量是手工挑的。">
                 Real scaled dot-product attention — softmax(QK<sup>T</sup>/√d) — over toy
                 four-dimensional vectors. The arithmetic is the same one a
                 transformer runs; only the vectors are hand-picked.
@@ -835,9 +835,9 @@
               <article class="lab-card" aria-labelledby="lab-curve-title">
                 <div class="lab-head">
                   <p class="lab-index" data-zh="02 / 訓練動態">02 / Training dynamics</p>
-                  <h3 id="lab-curve-title" data-zh="驗證曲線何時與訓練分家">Where validation leaves training</h3>
+                  <h3 id="lab-curve-title" data-zh="驗證損失從哪裡開始背離訓練">Where validation leaves training</h3>
                 </div>
-                <p class="lab-copy" data-zh="這是示意曲線，不是實測結果。訓練損失持續下降，驗證損失卻回頭上升。那個轉折之後的落差，就是模型在記憶而非泛化。">
+                <p class="lab-copy" data-zh="這是示意曲線，不是實測數據。訓練損失一路往下，驗證損失卻回頭往上。轉折之後的那段落差，就是模型在背答案，而不是學會舉一反三。">
                   An illustrative run, not a measured one. Training loss keeps
                   falling; validation turns back up. The gap after that turn is
                   the model memorising rather than generalising.
@@ -872,7 +872,7 @@
                   <p class="lab-index" data-zh="03 / 推論">03 / Inference</p>
                   <h3 id="lab-net-title" data-zh="一次前向傳播">One forward pass</h3>
                 </div>
-                <p class="lab-copy" data-zh="激活值由左至右穿過一個小型全連接網路。將游標移到任一單元，即可看出是哪些連線餵給它。">
+                <p class="lab-copy" data-zh="激活值由左往右穿過一個小型全連接網路。把游標移到任一個單元，就能看出是哪些連線餵給它。">
                   Activations moving left to right through a small dense network.
                   Hover a unit to isolate what feeds it.
                 </p>
@@ -891,7 +891,7 @@
                 <p class="lab-index" data-zh="05 / 最佳化">05 / Optimisation</p>
                 <h3 id="lab-gd-title" data-zh="看得見的學習率">Learning rate, seen</h3>
               </div>
-              <p class="lab-copy" data-zh="在一個病態條件的二次碗上做梯度下降。步伐太小會爬得很慢；太大則在山谷間來回震盪；一旦超過 <em>2/λ<sub>max</sub></em>，整個過程直接發散。">
+              <p class="lab-copy" data-zh="在一個條件數很差的二次曲面上做梯度下降。步伐太小會爬得很慢，太大會在山谷之間來回震盪；一旦超過 <em>2/λ<sub>max</sub></em>，整個過程直接發散。">
                 Gradient descent on an ill-conditioned quadratic bowl. Small
                 steps crawl; large ones zig-zag across the valley; past
                 <em>2/λ<sub>max</sub></em> the run diverges outright.
@@ -920,22 +920,22 @@
       <section class="section about-section" id="about" aria-labelledby="about-title">
         <div class="container">
           <div class="section-heading section-heading-light">
-            <h2 id="about-title" data-zh="關於 黃樺裕">About TerryH Huang</h2>
+            <h2 id="about-title" data-zh="關於黃樺裕">About TerryH Huang</h2>
             <span aria-hidden="true"></span>
           </div>
           <div class="about-grid">
             <p class="about-statement">
-              <span class="about-line" data-zh="我想理解的">I want to understand</span>
-              <span class="about-line">not only <em>how</em> tools work,</span>
-              <span class="about-line" data-zh="而是讓它們可靠的原理。">but the principles that make them reliable.</span>
+              <span class="about-line" data-zh="我想弄懂的">I want to understand</span>
+              <span class="about-line" data-zh="不只是工具怎麼運作，">not only <em>how</em> tools work,</span>
+              <span class="about-line" data-zh="而是讓它們可靠的那些原理。">but the principles that make them reliable.</span>
             </p>
             <div class="about-copy">
-              <p>
+              <p data-en="Huang Hua Yu (TerryH) is a developer working in machine learning, algorithms and software systems, building projects with Python, Scikit-learn, FastAPI, Docker and Git.">
                 黃樺裕（Huang Hua Yu, TerryH）是一位專注於 Machine Learning、
                 Algorithms 與 Software Systems 的開發者。主要使用 Python、
                 Scikit-learn、FastAPI、Docker 與 Git 建立機器學習與軟體工程專案。
               </p>
-              <p>
+              <p data-zh="我正在把從資料準備、特徵工程到部署的這條路走得更紮實，同時持續鑽研演算法、作業系統與後端設計。">
                 I’m currently strengthening the path from data preparation and feature
                 engineering to deployment, while continuing to study algorithms,
                 operating systems, and backend design.
@@ -994,7 +994,7 @@
             </article>
             <article>
               <h3 data-zh="黃樺裕在做什麼？">What does TerryH Huang work on?</h3>
-              <p class="project-description" data-zh="他的工作聚焦於機器學習、演算法、後端系統、FastAPI、Docker，以及實際的 AI 專案。">
+              <p class="project-description" data-zh="他的工作聚焦在機器學習、演算法、後端系統、FastAPI、Docker，以及真正落地的 AI 專案。">
                 His work focuses on machine learning, algorithms, backend systems,
                 FastAPI, Docker, and practical AI projects.
               </p>
@@ -1006,24 +1006,24 @@
       <section class="section principles-section" id="principles" aria-labelledby="principles-title">
         <div class="container">
           <div class="section-heading">
-            <h2 id="principles-title" data-zh="我怎麼工作">How I Work</h2>
+            <h2 id="principles-title" data-zh="我的工作方式">How I Work</h2>
             <span aria-hidden="true"></span>
           </div>
           <div class="principles-grid">
             <article>
               <p>01</p>
               <h3 data-zh="從資料開始">Start with the data</h3>
-              <span data-zh="在選模型之前，先弄清楚輸入、歸屬與限制。">Understand inputs, ownership, and constraints before choosing a model.</span>
+              <span data-zh="選模型之前，先弄清楚輸入是什麼、由誰負責、有哪些限制。">Understand inputs, ownership, and constraints before choosing a model.</span>
             </article>
             <article>
               <p>02</p>
-              <h3 data-zh="誠實地量測">Measure honestly</h3>
+              <h3 data-zh="誠實量測">Measure honestly</h3>
               <span data-zh="用驗證與錯誤分析，把真正的進展和一廂情願分開。">Use validation and error analysis to separate progress from optimism.</span>
             </article>
             <article>
               <p>03</p>
-              <h3 data-zh="為清晰而建">Build for clarity</h3>
-              <span data-zh="偏好可讀的系統 —— 能被測試、被解釋、被改進。">Prefer readable systems that can be tested, explained, and improved.</span>
+              <h3 data-zh="為清楚而設計">Build for clarity</h3>
+              <span data-zh="偏好讀得懂的系統：能測試、能解釋，也能持續改進。">Prefer readable systems that can be tested, explained, and improved.</span>
             </article>
           </div>
         </div>
@@ -1063,7 +1063,7 @@
     <footer class="site-footer">
       <div class="container footer-inner">
         <p>TerryH Huang</p>
-        <p data-zh="機器學習工程師">Aspiring Machine Learning Engineer</p>
+        <p data-zh="持續精進的機器學習工程師">Aspiring Machine Learning Engineer</p>
         <a href="#top" class="to-top" data-magnetic>
           <span data-zh="回到頂端 ↑">Back to top ↑</span>
           <svg class="to-top-ring" viewBox="0 0 36 36" aria-hidden="true" focusable="false">

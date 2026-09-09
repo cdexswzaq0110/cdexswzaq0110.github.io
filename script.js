@@ -2034,19 +2034,24 @@ function initLanguage() {
   const toggle = document.querySelector("[data-lang-toggle]");
   /* Never rewrite executable or structured content — a stray data-zh on a
      JSON-LD block would otherwise destroy the structured data on switch. */
-  const nodes = [...document.querySelectorAll("[data-zh]")].filter(
+  const nodes = [...document.querySelectorAll("[data-zh], [data-en]")].filter(
     (node) => !node.closest("script, style, template"),
   );
 
   if (!toggle || !nodes.length) return;
 
-  const english = new Map(nodes.map((node) => [node, node.innerHTML]));
+  /* Most of the page is written in English and carries data-zh. The About
+     block is the other way round: its Chinese paragraph stays in the markup
+     for search and carries data-en instead. */
+  const original = new Map(nodes.map((node) => [node, node.innerHTML]));
 
   function apply(lang) {
     const zh = lang === "zh";
 
     nodes.forEach((node) => {
-      node.innerHTML = zh ? node.dataset.zh : english.get(node);
+      const wanted = zh ? node.dataset.zh : node.dataset.en;
+
+      node.innerHTML = wanted ?? original.get(node);
     });
 
     root.lang = zh ? "zh-Hant" : "en";
@@ -2072,8 +2077,9 @@ function initLanguage() {
     /* storage blocked — the page simply stays in English */
   }
 
-  if (stored === "zh") apply("zh");
-  else toggle.setAttribute("aria-pressed", "false");
+  /* Apply on load either way: the About block's Chinese paragraph is the
+     markup's default, so English mode has to be asked for explicitly too. */
+  apply(stored === "zh" ? "zh" : "en");
 
   toggle.addEventListener("click", () => {
     const next = root.classList.contains("lang-zh") ? "en" : "zh";
