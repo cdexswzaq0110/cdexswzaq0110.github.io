@@ -39,8 +39,8 @@
     <meta name="twitter:image" content="https://cdexswzaq0110.github.io/assets/system-design.webp" />
 
     <link rel="preload" as="image" href="assets/cappuccino.webp" fetchpriority="high" />
-    <link rel="stylesheet" href="styles.css?v=11" />
-    <script src="script.js?v=11" defer></script>
+    <link rel="stylesheet" href="styles.css?v=12" />
+    <script src="script.js?v=12" defer></script>
     <script>
       /* Set intro + capability flags before first paint to avoid a flash. */
       (function () {
@@ -184,6 +184,7 @@
     <nav class="section-rail" data-rail aria-label="Section shortcuts">
       <a href="#top"><span class="rail-label">Intro</span><span class="rail-dot"></span></a>
       <a href="#work"><span class="rail-label">Work</span><span class="rail-dot"></span></a>
+      <a href="#lab"><span class="rail-label">Model</span><span class="rail-dot"></span></a>
       <a href="#about"><span class="rail-label">About</span><span class="rail-dot"></span></a>
       <a href="#principles"><span class="rail-label">Method</span><span class="rail-dot"></span></a>
       <a href="#contact"><span class="rail-label">Contact</span><span class="rail-dot"></span></a>
@@ -756,6 +757,109 @@
               </a>
             </article>
             </div>
+        </div>
+      </section>
+
+      <section class="section lab-section" id="lab" aria-labelledby="lab-title">
+        <div class="container">
+          <div class="section-heading">
+            <h2 id="lab-title">In the Model</h2>
+            <span aria-hidden="true"></span>
+          </div>
+          <div class="section-intro">
+            <p data-split="words">Three ideas I keep returning to, running live in the browser.</p>
+            <p class="section-count">No libraries · <span data-lab-fps>60</span> fps</p>
+          </div>
+
+          <div class="lab-grid">
+            <article class="lab-card lab-card-boundary" aria-labelledby="lab-knn-title">
+              <div class="lab-head">
+                <p class="lab-index">01 / Classification</p>
+                <h3 id="lab-knn-title">Decision boundary</h3>
+              </div>
+              <p class="lab-copy">
+                A k-nearest-neighbours classifier, recomputed on every click. Add
+                points and watch the boundary bend around them — the same
+                bias–variance trade-off that makes small <em>k</em> overfit.
+              </p>
+              <div class="lab-stage">
+                <canvas data-knn-canvas width="640" height="480" role="img"
+                  aria-label="Interactive scatter plot of two classes with a k-nearest-neighbours decision boundary"></canvas>
+                <p class="lab-hint" data-knn-hint>Click to add a point</p>
+              </div>
+              <div class="lab-controls" role="group" aria-label="Classifier controls">
+                <button type="button" class="lab-chip is-active" data-knn-class="0" aria-pressed="true">
+                  <i aria-hidden="true"></i>Class A
+                </button>
+                <button type="button" class="lab-chip" data-knn-class="1" aria-pressed="false">
+                  <i aria-hidden="true"></i>Class B
+                </button>
+                <button type="button" class="lab-chip lab-chip-ghost" data-knn-reset>Reset</button>
+              </div>
+              <p class="lab-readout">
+                <span><b data-knn-k>5</b> neighbours</span>
+                <span><b data-knn-count>0</b> points</span>
+                <span><b data-knn-acc>—</b> train accuracy</span>
+              </p>
+            </article>
+
+            <div class="lab-side">
+              <article class="lab-card" aria-labelledby="lab-curve-title">
+                <div class="lab-head">
+                  <p class="lab-index">02 / Training dynamics</p>
+                  <h3 id="lab-curve-title">Where validation leaves training</h3>
+                </div>
+                <p class="lab-copy">
+                  An illustrative run, not a measured one. Training loss keeps
+                  falling; validation turns back up. The gap after that turn is
+                  the model memorising rather than generalising.
+                </p>
+                <div class="lab-stage lab-stage-curve">
+                  <svg data-curve viewBox="0 0 320 170" role="img"
+                    aria-label="Line chart: training loss falls steadily while validation loss falls then rises, showing overfitting">
+                    <g class="curve-grid" aria-hidden="true">
+                      <line x1="34" y1="10" x2="34" y2="140" />
+                      <line x1="34" y1="140" x2="310" y2="140" />
+                      <line x1="34" y1="45" x2="310" y2="45" class="curve-grid-faint" />
+                      <line x1="34" y1="92" x2="310" y2="92" class="curve-grid-faint" />
+                    </g>
+                    <path class="curve-line curve-train" data-curve-path
+                      d="M34 26 C 80 60, 110 88, 140 102 S 210 122, 250 129 S 292 134, 310 136" />
+                    <path class="curve-line curve-val" data-curve-path
+                      d="M34 30 C 80 66, 108 92, 136 100 S 176 104, 200 100 S 260 78, 310 52" />
+                    <circle class="curve-marker" data-curve-marker r="3.5" cx="34" cy="30" aria-hidden="true" />
+                    <text class="curve-label" x="38" y="22">loss</text>
+                    <text class="curve-label" x="286" y="152">epoch</text>
+                  </svg>
+                </div>
+                <p class="lab-readout">
+                  <span>epoch <b data-curve-epoch>00</b></span>
+                  <span><i class="key key-train" aria-hidden="true"></i>train <b data-curve-train>—</b></span>
+                  <span><i class="key key-val" aria-hidden="true"></i>val <b data-curve-val>—</b></span>
+                </p>
+              </article>
+
+              <article class="lab-card" aria-labelledby="lab-net-title">
+                <div class="lab-head">
+                  <p class="lab-index">03 / Inference</p>
+                  <h3 id="lab-net-title">One forward pass</h3>
+                </div>
+                <p class="lab-copy">
+                  Activations moving left to right through a small dense network.
+                  Hover a unit to isolate what feeds it.
+                </p>
+                <div class="lab-stage lab-stage-net">
+                  <svg data-net viewBox="0 0 320 150" role="img"
+                    aria-label="Diagram of a four-layer dense neural network with activations flowing from input to output"></svg>
+                </div>
+                <p class="lab-readout">
+                  <span>4 → 6 → 6 → 3</span>
+                  <span><b>78</b> weights · <b>15</b> biases</span>
+                  <span>ReLU · softmax</span>
+                </p>
+              </article>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -534,7 +534,7 @@ function initReveals() {
   const revealItems = document.querySelectorAll(
     ".section-heading, .section-intro, .filter-bar, .project-card, .about-copy, " +
       ".skill-column, #faq article, .principles-grid article, .resume-block, " +
-      ".publication-list > a, .link-groups > section, .page-hero .eyebrow, " +
+      ".publication-list > a, .link-groups > section, .lab-card, .lab-controls, .page-hero .eyebrow, " +
       ".page-hero h1, .page-lead, .contact-grid > *, .footer-inner",
   );
   const aboutStatement = document.querySelector(".about-statement");
@@ -1444,7 +1444,378 @@ function initNavSheet() {
 }
 
 /* ---------------------------------------------------------------
-   14. Motion opt-in
+   14. In the Model — k-NN boundary, training curve, forward pass
+   --------------------------------------------------------------- */
+
+/* A k-nearest-neighbours classifier drawn straight onto a canvas. The field is
+   evaluated on a coarse grid and only when the data changes, so adding a point
+   costs one pass, not one per frame. */
+function initBoundaryLab() {
+  const canvas = document.querySelector("[data-knn-canvas]");
+  const context = canvas?.getContext?.("2d");
+
+  if (!canvas || !context) return;
+
+  const hint = document.querySelector("[data-knn-hint]");
+  const countOut = document.querySelector("[data-knn-count]");
+  const accuracyOut = document.querySelector("[data-knn-acc]");
+  const classButtons = [...document.querySelectorAll("[data-knn-class]")];
+  const reset = document.querySelector("[data-knn-reset]");
+
+  const K = 5;
+  const CELL = 16;
+  const width = canvas.width;
+  const height = canvas.height;
+  const palette = [
+    { fill: "#111111", ring: "#111111", field: "17, 17, 17" },
+    { fill: "#f5f5f5", ring: "#111111", field: "163, 130, 96" },
+  ];
+
+  let points = [];
+  let active = 0;
+
+  /* Two interleaving arcs — separable, but not by a straight line. */
+  function seed() {
+    points = [];
+
+    for (let i = 0; i < 11; i += 1) {
+      const angle = Math.PI * (i / 10);
+
+      points.push({
+        x: 0.28 + Math.cos(angle) * 0.2 + (Math.random() - 0.5) * 0.05,
+        y: 0.34 + Math.sin(angle) * 0.22 + (Math.random() - 0.5) * 0.05,
+        label: 0,
+      });
+      points.push({
+        x: 0.72 - Math.cos(angle) * 0.2 + (Math.random() - 0.5) * 0.05,
+        y: 0.68 - Math.sin(angle) * 0.22 + (Math.random() - 0.5) * 0.05,
+        label: 1,
+      });
+    }
+  }
+
+  function classify(x, y, skip) {
+    const near = [];
+
+    for (let i = 0; i < points.length; i += 1) {
+      if (i === skip) continue;
+
+      const point = points[i];
+      const dx = point.x - x;
+      const dy = point.y - y;
+
+      near.push({ d: dx * dx + dy * dy, label: point.label });
+    }
+
+    near.sort((a, b) => a.d - b.d);
+
+    const used = Math.min(K, near.length);
+    let votes = 0;
+
+    for (let i = 0; i < used; i += 1) votes += near[i].label;
+
+    return { label: votes * 2 > used ? 1 : 0, confidence: Math.abs(votes / used - 0.5) * 2 };
+  }
+
+  function draw() {
+    context.clearRect(0, 0, width, height);
+
+    for (let x = 0; x < width; x += CELL) {
+      for (let y = 0; y < height; y += CELL) {
+        const { label, confidence } = classify((x + CELL / 2) / width, (y + CELL / 2) / height);
+        const alpha = (0.06 + confidence * 0.13).toFixed(3);
+
+        context.fillStyle = `rgba(${palette[label].field}, ${alpha})`;
+        context.fillRect(x, y, CELL, CELL);
+      }
+    }
+
+    context.lineWidth = 2;
+
+    points.forEach((point) => {
+      const style = palette[point.label];
+
+      context.beginPath();
+      context.fillStyle = style.fill;
+      context.strokeStyle = style.ring;
+      context.arc(point.x * width, point.y * height, 6, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+    });
+  }
+
+  /* Leave-one-out: scoring a point against itself would be free marks. */
+  function report() {
+    if (countOut) countOut.textContent = String(points.length);
+
+    if (!accuracyOut) return;
+
+    if (points.length <= K) {
+      accuracyOut.textContent = "—";
+      return;
+    }
+
+    let correct = 0;
+
+    points.forEach((point, index) => {
+      if (classify(point.x, point.y, index).label === point.label) correct += 1;
+    });
+
+    accuracyOut.textContent = `${Math.round((correct / points.length) * 100)}%`;
+  }
+
+  function refresh() {
+    draw();
+    report();
+  }
+
+  function addPoint(event) {
+    const bounds = canvas.getBoundingClientRect();
+    const x = clamp((event.clientX - bounds.left) / bounds.width, 0, 1);
+    const y = clamp((event.clientY - bounds.top) / bounds.height, 0, 1);
+
+    points.push({ x, y, label: active });
+    hint?.setAttribute("data-spent", "");
+    refresh();
+  }
+
+  canvas.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    addPoint(event);
+  });
+
+  /* Painting a stroke of points beats clicking twenty times. */
+  canvas.addEventListener("pointermove", (event) => {
+    if (event.buttons !== 1) return;
+
+    const bounds = canvas.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width;
+    const y = (event.clientY - bounds.top) / bounds.height;
+    const last = points[points.length - 1];
+
+    if (last && Math.hypot(last.x - x, last.y - y) < 0.045) return;
+
+    addPoint(event);
+  });
+
+  classButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      active = Number(button.dataset.knnClass);
+      classButtons.forEach((other) => {
+        const on = other === button;
+
+        other.classList.toggle("is-active", on);
+        other.setAttribute("aria-pressed", String(on));
+      });
+    });
+  });
+
+  reset?.addEventListener("click", () => {
+    seed();
+    hint?.removeAttribute("data-spent");
+    refresh();
+  });
+
+  seed();
+  refresh();
+}
+
+/* Scroll-scrubbed loss curves, drawn with stroke-dashoffset so the drawing
+   itself stays on the compositor. */
+function initCurveLab() {
+  const svg = document.querySelector("[data-curve]");
+
+  if (!svg) return;
+
+  const paths = [...svg.querySelectorAll("[data-curve-path]")];
+  const marker = svg.querySelector("[data-curve-marker]");
+  const epochOut = document.querySelector("[data-curve-epoch]");
+  const trainOut = document.querySelector("[data-curve-train]");
+  const valOut = document.querySelector("[data-curve-val]");
+  const train = paths[0];
+  const val = paths[1];
+
+  paths.forEach((path) => {
+    path.style.setProperty("--curve-length", path.getTotalLength().toFixed(1));
+  });
+
+  /* y grows downward in SVG: y=140 sits on the axis (loss 0), y=20 is the top. */
+  const lossAt = (path, progress) =>
+    (((140 - path.getPointAtLength(path.getTotalLength() * progress).y) / 120) * 1.6).toFixed(2);
+
+  if (!motion) {
+    svg.style.setProperty("--curve-progress", "1");
+    if (epochOut) epochOut.textContent = "60";
+    if (trainOut && train) trainOut.textContent = lossAt(train, 1);
+    if (valOut && val) valOut.textContent = lossAt(val, 1);
+    return;
+  }
+
+  const card = svg.closest(".lab-card") || svg;
+
+  addFrameTask(() => {
+    const bounds = card.getBoundingClientRect();
+
+    if (bounds.bottom < 0 || bounds.top > window.innerHeight) return;
+
+    /* 0 as the card enters, 1 once it has cleared the middle of the screen. */
+    const span = window.innerHeight * 0.75;
+    const progress = clamp((window.innerHeight - bounds.top - span * 0.25) / span, 0, 1);
+
+    svg.style.setProperty("--curve-progress", progress.toFixed(3));
+
+    if (marker && val) {
+      const point = val.getPointAtLength(val.getTotalLength() * progress);
+
+      marker.setAttribute("cx", point.x.toFixed(1));
+      marker.setAttribute("cy", point.y.toFixed(1));
+    }
+
+    if (epochOut) epochOut.textContent = String(Math.round(progress * 60)).padStart(2, "0");
+    if (trainOut && train) trainOut.textContent = lossAt(train, progress);
+    if (valOut && val) valOut.textContent = lossAt(val, progress);
+  });
+}
+
+/* A small dense net built in SVG, so the activation pulses can run as CSS
+   animations rather than another rAF loop. */
+function initNetworkLab() {
+  const svg = document.querySelector("[data-net]");
+
+  if (!svg) return;
+
+  const layers = [4, 6, 6, 3];
+  const names = ["input", "dense", "dense", "output"];
+  const height = 150;
+  const left = 34;
+  const right = 286;
+  const ns = "http://www.w3.org/2000/svg";
+  const nodes = [];
+
+  layers.forEach((count, layer) => {
+    const x = left + ((right - left) / (layers.length - 1)) * layer;
+    const column = [];
+
+    for (let i = 0; i < count; i += 1) {
+      column.push({
+        x,
+        y: height / 2 - 22 + ((i - (count - 1) / 2) * 86) / Math.max(count - 1, 1),
+      });
+    }
+
+    nodes.push(column);
+  });
+
+  const edgeGroup = document.createElementNS(ns, "g");
+  const nodeGroup = document.createElementNS(ns, "g");
+  const edges = [];
+
+  nodes.slice(0, -1).forEach((column, layer) => {
+    column.forEach((from, i) => {
+      nodes[layer + 1].forEach((to, j) => {
+        const edge = document.createElementNS(ns, "line");
+
+        edge.setAttribute("class", "net-edge");
+        edge.setAttribute("x1", from.x);
+        edge.setAttribute("y1", from.y);
+        edge.setAttribute("x2", to.x);
+        edge.setAttribute("y2", to.y);
+        edge.dataset.from = `${layer}-${i}`;
+        edge.dataset.to = `${layer + 1}-${j}`;
+        edgeGroup.append(edge);
+        edges.push(edge);
+
+        const pulse = edge.cloneNode(false);
+
+        pulse.setAttribute("class", "net-pulse");
+        pulse.style.setProperty("--edge-delay", `${(layer * 0.55 + (i + j) * 0.03).toFixed(2)}s`);
+        edgeGroup.append(pulse);
+      });
+    });
+  });
+
+  nodes.forEach((column, layer) => {
+    column.forEach((node, i) => {
+      const circle = document.createElementNS(ns, "circle");
+
+      circle.setAttribute("class", "net-node");
+      circle.setAttribute("cx", node.x);
+      circle.setAttribute("cy", node.y);
+      circle.setAttribute("r", 5);
+      circle.dataset.node = `${layer}-${i}`;
+      nodeGroup.append(circle);
+
+      /* A 5px circle is a poor hover target, so give it an invisible one. */
+      const hit = document.createElementNS(ns, "circle");
+
+      hit.setAttribute("class", "net-node-hit");
+      hit.setAttribute("cx", node.x);
+      hit.setAttribute("cy", node.y);
+      hit.setAttribute("r", 13);
+      hit.dataset.hit = `${layer}-${i}`;
+      nodeGroup.append(hit);
+    });
+
+    const label = document.createElementNS(ns, "text");
+
+    label.setAttribute("class", "net-layer-label");
+    label.setAttribute("x", column[0].x);
+    label.setAttribute("y", height - 8);
+    label.textContent = names[layer];
+    nodeGroup.append(label);
+  });
+
+  svg.append(edgeGroup, nodeGroup);
+
+  if (!finePointer.matches) return;
+
+  svg.addEventListener("pointerover", (event) => {
+    const id = event.target instanceof Element ? event.target.dataset.hit : null;
+
+    if (!id) return;
+
+    svg.classList.add("is-focused");
+    edges.forEach((edge) => edge.classList.toggle("is-lit", edge.dataset.to === id));
+    nodeGroup.querySelectorAll(".net-node").forEach((node) => {
+      const lit =
+        node.dataset.node === id ||
+        edges.some((edge) => edge.dataset.to === id && edge.dataset.from === node.dataset.node);
+
+      node.classList.toggle("is-lit", lit);
+    });
+  });
+
+  svg.addEventListener("pointerleave", () => {
+    svg.classList.remove("is-focused");
+    edges.forEach((edge) => edge.classList.remove("is-lit"));
+    nodeGroup.querySelectorAll(".net-node").forEach((node) => node.classList.remove("is-lit"));
+  });
+}
+
+/* Measured, not claimed — the readout beside the lab shows the real rate. */
+function initFpsReadout() {
+  const out = document.querySelector("[data-lab-fps]");
+
+  if (!out || !motion) return;
+
+  let frames = 0;
+  let since = performance.now();
+
+  addFrameTask((_, now) => {
+    frames += 1;
+
+    if (now - since < 1000) return;
+
+    const rate = Math.round((frames * 1000) / (now - since));
+
+    if (rate > 0) out.textContent = String(Math.min(rate, 120));
+    frames = 0;
+    since = now;
+  });
+}
+
+/* ---------------------------------------------------------------
+   15. Motion opt-in
    --------------------------------------------------------------- */
 
 function setMotion(value) {
@@ -1471,7 +1842,7 @@ function initMotionToggle() {
 }
 
 /* ---------------------------------------------------------------
-   15. Page transitions
+   16. Page transitions
    --------------------------------------------------------------- */
 
 function initPageTransition() {
@@ -1508,7 +1879,7 @@ function initPageTransition() {
 }
 
 /* ---------------------------------------------------------------
-   16. Boot
+   17. Boot
    --------------------------------------------------------------- */
 
 initFilter();
@@ -1516,6 +1887,10 @@ initProjectDirectory();
 initNavSheet();
 initHeroCanvas();
 initMotionToggle();
+initBoundaryLab();
+initCurveLab();
+initNetworkLab();
+initFpsReadout();
 
 if (!motion) {
   root.classList.remove("is-loading");

@@ -131,6 +131,7 @@ html.lenis-active {
 }
 
 #work,
+#lab,
 #about,
 #faq,
 #principles,
@@ -1227,6 +1228,343 @@ h3,
 
 .project-card a:hover .tag-list li:nth-child(3) {
   transition-delay: 90ms;
+}
+
+/* ---------------------------------------------------------------
+   In the Model — live ML pieces
+   --------------------------------------------------------------- */
+
+.lab-grid {
+  display: grid;
+  align-items: start;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  margin-top: 3.5rem;
+}
+
+.lab-side {
+  display: grid;
+  align-content: start;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.lab-card {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.lab-index {
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.lab-card h3 {
+  margin-top: 0.5rem;
+  color: var(--ink);
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.lab-copy {
+  max-width: 42ch;
+  margin-top: 0.9rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.lab-copy em {
+  font-style: italic;
+}
+
+.lab-stage {
+  position: relative;
+  margin-top: 1.35rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--canvas);
+}
+
+.lab-stage canvas,
+.lab-stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.lab-card-boundary .lab-stage {
+  cursor: crosshair;
+  aspect-ratio: 4 / 3;
+}
+
+.lab-card-boundary canvas {
+  height: 100%;
+}
+
+.lab-hint {
+  position: absolute;
+  inset: auto 0 0.6rem;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+  transition: opacity 400ms var(--ease-out);
+}
+
+.lab-hint[data-spent] {
+  opacity: 0;
+}
+
+.lab-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 1.1rem;
+}
+
+.lab-chip {
+  display: inline-flex;
+  min-height: 2.3rem;
+  align-items: center;
+  gap: 0.45rem;
+  padding-inline: 0.85rem;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  scale: var(--press, 1);
+  transition: color 260ms var(--ease-out), border-color 260ms var(--ease-out),
+    background 260ms var(--ease-out), scale 160ms var(--ease-out);
+}
+
+.lab-chip:active {
+  --press: 0.96;
+}
+
+.lab-chip i {
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+
+.lab-chip[data-knn-class="0"] i {
+  background: var(--ink);
+}
+
+.lab-chip[data-knn-class="1"] i {
+  background: var(--canvas);
+  border-color: var(--ink);
+  border-width: 2px;
+}
+
+.lab-chip:hover {
+  color: var(--ink);
+  border-color: var(--frame);
+}
+
+.lab-chip.is-active {
+  color: var(--white);
+  border-color: var(--ink);
+  background: var(--ink);
+}
+
+.lab-chip.is-active i {
+  border-color: var(--white);
+}
+
+.lab-readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.1rem;
+  margin-top: 1.1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+}
+
+.lab-readout span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.lab-readout b {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.key {
+  width: 0.7rem;
+  height: 2px;
+}
+
+.key-train {
+  background: var(--ink);
+}
+
+.key-val {
+  background: var(--frame);
+}
+
+/* Training curve */
+
+.lab-stage-curve,
+.lab-stage-net {
+  padding: 0.5rem;
+}
+
+.curve-grid line {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.curve-grid-faint {
+  stroke-dasharray: 2 4;
+  opacity: 0.7;
+}
+
+.curve-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.curve-train {
+  stroke: var(--ink);
+}
+
+.curve-val {
+  stroke: var(--frame);
+}
+
+.motion-ready .curve-line {
+  stroke-dasharray: var(--curve-length, 400);
+  stroke-dashoffset: calc(var(--curve-length, 400) * (1 - var(--curve-progress, 0)));
+}
+
+.curve-marker {
+  fill: var(--ink);
+  opacity: 0;
+}
+
+.motion-ready .curve-marker {
+  opacity: var(--curve-progress, 0);
+}
+
+.curve-label {
+  fill: var(--muted);
+  font-family: var(--font-display);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Forward pass */
+
+.net-edge {
+  stroke: var(--line);
+  stroke-width: 1;
+  opacity: 0.85;
+  transition: stroke 300ms var(--ease-out), opacity 300ms var(--ease-out);
+}
+
+/* The travelling activation, drawn over the static edge rather than replacing
+   it — a dash gap that long would otherwise erase the connection entirely. */
+.net-pulse {
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+.motion-ready .net-pulse {
+  stroke-dasharray: 5 95;
+  opacity: 1;
+  animation: net-pulse 2.6s linear infinite;
+  animation-delay: var(--edge-delay, 0s);
+}
+
+@keyframes net-pulse {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+[data-net].is-focused .net-pulse {
+  opacity: 0;
+}
+
+.net-node {
+  fill: var(--canvas);
+  stroke: var(--frame);
+  stroke-width: 1.4;
+  transition: fill 300ms var(--ease-out), stroke 300ms var(--ease-out);
+}
+
+.net-node-hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+[data-net].is-focused .net-edge {
+  opacity: 0.12;
+}
+
+[data-net].is-focused .net-edge.is-lit {
+  opacity: 1;
+  stroke: var(--ink);
+  animation: none;
+  stroke-dasharray: none;
+}
+
+[data-net].is-focused .net-node {
+  opacity: 0.35;
+}
+
+[data-net].is-focused .net-node.is-lit {
+  opacity: 1;
+  fill: var(--ink);
+  stroke: var(--ink);
+}
+
+.net-layer-label {
+  fill: var(--muted);
+  font-family: var(--font-display);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  text-anchor: middle;
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .lab-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ---------------------------------------------------------------
@@ -2335,7 +2673,8 @@ h3,
   /* Comfortable targets. */
   .link-list a,
   .document-meta a,
-  .footer-inner a {
+  .footer-inner a,
+  .lab-chip {
     min-height: 2.75rem;
   }
 }
