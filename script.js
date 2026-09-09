@@ -11,9 +11,9 @@ const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
 const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
 /* This is a motion-led portfolio, so the full layer is the default and the
-   owner has asked for it explicitly. Visitors whose system requests reduced
-   motion are told so on arrival and can switch it off in one click; the choice
-   is remembered, and only ever in their own browser. */
+   owner has asked for it explicitly, knowing this overrides the OS setting.
+   The only way out is the footer toggle; the choice is remembered, and only
+   ever in the visitor's own browser. */
 function motionChoice() {
   try {
     return window.localStorage.getItem("th-motion");
@@ -1460,41 +1460,14 @@ function setMotion(value) {
 
 function initMotionToggle() {
   const toggle = document.querySelector("[data-motion-toggle]");
-  const invite = document.querySelector("[data-motion-invite]");
 
-  if (toggle) {
-    const state = toggle.querySelector("[data-motion-state]");
+  if (!toggle) return;
 
-    toggle.setAttribute("aria-pressed", String(motion));
-    if (state) state.textContent = motion ? "On" : "Off";
-    toggle.addEventListener("click", () => setMotion(motion ? "off" : "on"));
-  }
+  const state = toggle.querySelector("[data-motion-state]");
 
-  if (!invite) return;
-
-  let dismissed = false;
-
-  try {
-    dismissed = window.localStorage.getItem("th-motion-invite") === "dismissed";
-  } catch (error) {
-    /* storage blocked — show the invite, it is dismissable either way */
-  }
-
-  /* Tell anyone whose system asked for reduced motion that this site is
-     running the full layer, and give them one click to stop it. */
-  if (motion && reducedMotion.matches && !dismissed) invite.hidden = false;
-
-  invite.querySelector("[data-motion-enable]")?.addEventListener("click", () => setMotion("off"));
-
-  invite.querySelector("[data-motion-dismiss]")?.addEventListener("click", () => {
-    invite.hidden = true;
-
-    try {
-      window.localStorage.setItem("th-motion-invite", "dismissed");
-    } catch (error) {
-      /* it will simply appear again next visit */
-    }
-  });
+  toggle.setAttribute("aria-pressed", String(motion));
+  if (state) state.textContent = motion ? "On" : "Off";
+  toggle.addEventListener("click", () => setMotion(motion ? "off" : "on"));
 }
 
 /* ---------------------------------------------------------------
