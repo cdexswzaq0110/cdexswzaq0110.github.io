@@ -2088,6 +2088,79 @@ function initLanguage() {
   });
 }
 
+/* ---------------------------------------------------------------
+   Copy to clipboard
+   --------------------------------------------------------------- */
+
+async function copyText(text) {
+  /* The async API needs a secure context; the textarea path covers the rest. */
+  try {
+    if (window.navigator.clipboard?.writeText) {
+      await window.navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (error) {
+    /* fall through to the legacy path */
+  }
+
+  try {
+    const field = document.createElement("textarea");
+
+    field.value = text;
+    field.setAttribute("readonly", "");
+    field.style.cssText = "position:fixed;top:-200px;left:0;opacity:0";
+    document.body.append(field);
+    field.select();
+
+    const copied = document.execCommand("copy");
+
+    field.remove();
+
+    return copied;
+  } catch (error) {
+    return false;
+  }
+}
+
+function initCopyEmail() {
+  const link = document.querySelector("[data-copy-email]");
+
+  if (!link) return;
+
+  const status = document.querySelector("[data-copy-status]");
+  const address = link.getAttribute("href").replace(/^mailto:/, "");
+  let revert = null;
+
+  link.addEventListener("click", async (event) => {
+    /* Leave modified clicks alone — they are how people open a link. */
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+
+    event.preventDefault();
+
+    if (await copyText(address)) {
+      const zh = root.classList.contains("lang-zh");
+      const restore = link.innerHTML;
+
+      link.innerHTML = zh ? link.dataset.copiedZh : link.dataset.copiedEn;
+      link.classList.add("is-copied");
+      if (status) status.textContent = `${address} ${zh ? "已複製" : "copied to clipboard"}`;
+
+      window.clearTimeout(revert);
+      revert = window.setTimeout(() => {
+        /* Restore whatever the label was, so a language switch mid-flash wins. */
+        link.innerHTML = root.classList.contains("lang-zh") ? link.dataset.zh : restore;
+        link.classList.remove("is-copied");
+        if (status) status.textContent = "";
+      }, 2200);
+
+      return;
+    }
+
+    /* Nothing could reach the clipboard — do what the link says instead. */
+    window.location.href = link.href;
+  });
+}
+
 /* Measured, not claimed — the readout beside the lab shows the real rate. */
 function initFpsReadout() {
   const out = document.querySelector("[data-lab-fps]");
@@ -2184,6 +2257,7 @@ initNavSheet();
 initHeroCanvas();
 initMotionToggle();
 initLanguage();
+initCopyEmail();
 initBoundaryLab();
 initCurveLab();
 initNetworkLab();

@@ -39,8 +39,8 @@
     <meta name="twitter:image" content="https://cdexswzaq0110.github.io/assets/system-design.webp" />
 
     <link rel="preload" as="image" href="assets/cappuccino.webp" fetchpriority="high" />
-    <link rel="stylesheet" href="styles.css?v=13" />
-    <script src="script.js?v=13" defer></script>
+    <link rel="stylesheet" href="styles.css?v=14" />
+    <script src="script.js?v=14" defer></script>
     <script>
       /* Set intro + capability flags before first paint to avoid a flash. */
       (function () {
@@ -1036,7 +1036,16 @@
             <h2 id="contact-title" data-split="chars" data-zh="一起做點有用的東西。">Let’s build something useful.</h2>
           </div>
           <div class="contact-actions">
-            <a class="button" href="mailto:cdexswzaq0110@gmail.com" data-magnetic>Send an email</a>
+            <a
+              class="button"
+              href="mailto:cdexswzaq0110@gmail.com"
+              data-copy-email
+              data-magnetic
+              data-zh="複製 Email"
+              data-copied-en="Copied ✓"
+              data-copied-zh="已複製 ✓"
+            >Copy email</a>
+            <p class="visually-hidden" role="status" data-copy-status></p>
             <a
               class="text-link"
               href="https://www.linkedin.com/in/%E6%A8%BA%E8%A3%95-%E9%BB%83-terryh/"

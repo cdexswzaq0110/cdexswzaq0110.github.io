@@ -2024,6 +2024,24 @@ h3,
   justify-items: start;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Confirmation reads as the button inverting, not as a colour change. */
+.button.is-copied {
+  color: var(--ink);
+  background: var(--warm);
+  border-color: var(--ink);
+}
+
 .text-link {
   font-size: 0.75rem;
   letter-spacing: 0.12em;
