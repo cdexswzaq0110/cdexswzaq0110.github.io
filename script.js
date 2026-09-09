@@ -76,8 +76,9 @@ function visibleCards() {
 }
 
 function updateActiveProjects(cards) {
+  const shown = visibleCards();
   const label = cards
-    .map((card) => String(projectCards.indexOf(card) + 1).padStart(2, "0"))
+    .map((card) => String(shown.indexOf(card) + 1).padStart(2, "0"))
     .join("–");
 
   if (!label || label === activeProjects) return;
@@ -95,6 +96,8 @@ function updateActiveProjects(cards) {
   if (!projectCounter) return;
 
   projectCounter.textContent = label;
+  if (!motion) return;
+
   projectCounter.animate?.(
     [
       { opacity: 0, transform: "translateY(35%)" },

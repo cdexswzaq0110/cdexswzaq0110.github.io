@@ -2648,18 +2648,12 @@ h3,
   letter-spacing: 0;
   text-transform: none;
   color: #655c54;
-  background: transparent;
-  transition: background 180ms var(--ease-out), color 180ms var(--ease-out);
+  background-image: linear-gradient(#302b26, #302b26);
 }
 
-.work-toolbar .filter-chip:hover {
-  background: #e7e0d6;
-  color: var(--ink);
-}
-
+.work-toolbar .filter-chip:hover,
 .work-toolbar .filter-chip.is-active {
   color: #fffaf4;
-  background: #302b26;
 }
 
 .work-toolbar .filter-chip sup {
@@ -2841,9 +2835,9 @@ h3,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .work-directory summary > span,
-  .work-directory a,
-  .work-toolbar .filter-chip { transition: none; }
+  :root:not(.motion-on) .work-directory summary > span,
+  :root:not(.motion-on) .work-directory a,
+  :root:not(.motion-on) .work-toolbar .filter-chip { transition: none; }
 }
 
 @media (max-width: 640px) {
