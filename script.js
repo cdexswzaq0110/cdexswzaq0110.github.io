@@ -103,7 +103,7 @@ function updateScrollProgress() {
 }
 
 function updateMotionEffects() {
-  if (!hero) return;
+  if (!hero || !motion) return;
 
   const heroRange = Math.max(hero.offsetHeight - window.innerHeight * 0.25, 1);
   const heroProgress = clamp(window.scrollY / heroRange, 0, 1);

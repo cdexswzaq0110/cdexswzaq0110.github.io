@@ -1000,15 +1000,17 @@ h3,
 .project-visual img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  transform: none;
+  object-fit: cover;
+  transform: scale(1.06)
+    translate3d(var(--media-x, 0), calc(var(--media-y, 0px) + var(--scroll-media-y, 0px)), 0);
   transition: transform 180ms linear;
   will-change: transform;
 }
 
 .project-card a:hover .project-visual img,
 .project-card a:focus-visible .project-visual img {
-  transform: none;
+  transform: scale(1.1)
+    translate3d(var(--media-x, 0), calc(var(--media-y, 0px) + var(--scroll-media-y, 0px)), 0);
 }
 
 .project-card a:hover .project-visual::after,
@@ -2671,7 +2673,6 @@ h3,
   min-width: 0;
   margin-top: 0;
   gap: clamp(3rem, 5vw, 5rem) clamp(1.4rem, 3vw, 2.75rem);
-  transform: none;
 }
 
 .work-layout .project-card {
