@@ -39,8 +39,8 @@
     <meta name="twitter:image" content="https://cdexswzaq0110.github.io/assets/system-design.webp" />
 
     <link rel="preload" as="image" href="assets/cappuccino.webp" fetchpriority="high" />
-    <link rel="stylesheet" href="styles.css?v=12" />
-    <script src="script.js?v=12" defer></script>
+    <link rel="stylesheet" href="styles.css?v=13" />
+    <script src="script.js?v=13" defer></script>
     <script>
       /* Set intro + capability flags before first paint to avoid a flash. */
       (function () {
@@ -154,30 +154,35 @@
       <div class="container header-inner">
         <a class="brand" href="#top" data-scramble aria-label="TerryH Huang, home">Terry H.</a>
         <nav class="site-nav" aria-label="Primary navigation">
-          <a href="#work" data-scramble>Work</a>
-          <a href="resume.html" data-scramble>Resume</a>
-          <a href="links.html" data-scramble>Links</a>
+          <a href="#work" data-scramble data-zh="作品">Work</a>
+          <a href="resume.html" data-scramble data-zh="履歷">Resume</a>
+          <a href="links.html" data-scramble data-zh="連結">Links</a>
         </nav>
-        <a
-          class="header-link"
-          href="https://github.com/cdexswzaq0110"
-          target="_blank"
-          rel="noreferrer"
-          data-magnetic
-          aria-label="View GitHub profile in a new tab"
-        >
-          GitHub <span aria-hidden="true">↗</span>
-        </a>
-        <button
-          class="nav-toggle"
-          type="button"
-          data-nav-toggle
-          aria-expanded="false"
-          aria-controls="site-menu"
-        >
-          <span class="nav-toggle-lines" aria-hidden="true"><i></i><i></i></span>
-          Menu
-        </button>
+        <div class="header-end">
+          <button class="lang-toggle" type="button" data-lang-toggle aria-label="Switch language / 切換語言">
+            <span class="lang-en">EN</span><i aria-hidden="true"></i><span class="lang-zh">中</span>
+          </button>
+          <a
+            class="header-link"
+            href="https://github.com/cdexswzaq0110"
+            target="_blank"
+            rel="noreferrer"
+            data-magnetic
+            aria-label="View GitHub profile in a new tab"
+          >
+            GitHub <span aria-hidden="true">↗</span>
+          </a>
+          <button
+            class="nav-toggle"
+            type="button"
+            data-nav-toggle
+            aria-expanded="false"
+            aria-controls="site-menu"
+          >
+            <span class="nav-toggle-lines" aria-hidden="true"><i></i><i></i></span>
+            Menu
+          </button>
+        </div>
       </div>
     </header>
 
@@ -195,18 +200,18 @@
         <canvas class="hero-canvas" data-hero-canvas aria-hidden="true"></canvas>
         <div class="container hero-grid">
           <div class="hero-copy">
-            <p class="eyebrow">Machine Learning · Software Systems</p>
+            <p class="eyebrow" data-zh="機器學習 · 軟體系統">Machine Learning · Software Systems</p>
             <h1 id="hero-title" data-split="lines">
-              <span class="hero-line">Build systems.</span>
-              <span class="hero-line">Study deeply.</span>
-              <span class="hero-line">Ship clearly.</span>
+              <span class="hero-line" data-zh="打造系統。">Build systems.</span>
+              <span class="hero-line" data-zh="深入鑽研。">Study deeply.</span>
+              <span class="hero-line" data-zh="清楚交付。">Ship clearly.</span>
             </h1>
-            <p class="hero-lead">
+            <p class="hero-lead" data-zh="我是黃樺裕，一位機器學習工程師，把資料、演算法與可靠的軟體連結成實際的專案。">
               I’m TerryH Huang, an aspiring machine learning engineer connecting data,
               algorithms, and dependable software into practical projects.
             </p>
             <div class="hero-actions">
-              <a class="button" href="#work" data-magnetic>View selected work</a>
+              <a class="button" href="#work" data-magnetic data-zh="查看精選作品">View selected work</a>
               <a
                 class="button button-secondary"
                 href="https://github.com/cdexswzaq0110"
@@ -217,7 +222,7 @@
                 Explore GitHub
               </a>
             </div>
-            <p class="status-pill">
+            <p class="status-pill" data-zh="&lt;i aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;歡迎交流與合作">
               <i aria-hidden="true"></i>Open to learning and collaboration
             </p>
           </div>
@@ -238,7 +243,7 @@
         </div>
 
         <a class="hero-scroll" href="#work" aria-label="Scroll to selected work">
-          <span>Scroll</span>
+          <span data-zh="向下捲動">Scroll</span>
           <span class="hero-scroll-line" aria-hidden="true"></span>
         </a>
       </section>
@@ -261,11 +266,11 @@
       <section class="section work-section" id="work" aria-labelledby="work-title">
         <div class="container">
           <div class="section-heading">
-            <h2 id="work-title">Selected Work</h2>
+            <h2 id="work-title" data-zh="精選作品">Selected Work</h2>
             <span aria-hidden="true"></span>
           </div>
           <div class="section-intro">
-            <p data-split="words">From first principles to working systems.<br />A collection of things I’ve built and studied.</p>
+            <p data-split="words" data-zh="從第一性原理到能運作的系統。<br />這是我做過與研究過的東西。">From first principles to working systems.<br />A collection of things I’ve built and studied.</p>
             <p class="section-count">
               <span data-project-count>01</span> / <span data-project-total>14</span> projects
             </p>
@@ -763,21 +768,22 @@
       <section class="section lab-section" id="lab" aria-labelledby="lab-title">
         <div class="container">
           <div class="section-heading">
-            <h2 id="lab-title">In the Model</h2>
+            <h2 id="lab-title" data-zh="模型內部">In the Model</h2>
             <span aria-hidden="true"></span>
           </div>
           <div class="section-intro">
-            <p data-split="words">Three ideas I keep returning to, running live in the browser.</p>
+            <p data-split="words" data-zh="三個我反覆回到的概念，在瀏覽器裡實際運行。">Three ideas I keep returning to, running live in the browser.</p>
             <p class="section-count">No libraries · <span data-lab-fps>60</span> fps</p>
           </div>
 
           <div class="lab-grid">
+            <div class="lab-column">
             <article class="lab-card lab-card-boundary" aria-labelledby="lab-knn-title">
               <div class="lab-head">
-                <p class="lab-index">01 / Classification</p>
-                <h3 id="lab-knn-title">Decision boundary</h3>
+                <p class="lab-index" data-zh="01 / 分類">01 / Classification</p>
+                <h3 id="lab-knn-title" data-zh="決策邊界">Decision boundary</h3>
               </div>
-              <p class="lab-copy">
+              <p class="lab-copy" data-zh="一個 k-近鄰分類器，每次點擊都重新計算。加入資料點，看邊界如何隨之彎折 —— 這正是讓小的 <em>k</em> 過擬合的偏差–變異權衡。">
                 A k-nearest-neighbours classifier, recomputed on every click. Add
                 points and watch the boundary bend around them — the same
                 bias–variance trade-off that makes small <em>k</em> overfit.
@@ -803,13 +809,35 @@
               </p>
             </article>
 
-            <div class="lab-side">
+            <article class="lab-card" aria-labelledby="lab-attn-title">
+              <div class="lab-head">
+                <p class="lab-index" data-zh="04 / 注意力">04 / Attention</p>
+                <h3 id="lab-attn-title" data-zh="每個 token 在看什麼">What each token looks at</h3>
+              </div>
+              <p class="lab-copy" data-zh="真正的 scaled dot-product attention —— softmax(QK<sup>T</sup>/√d) —— 只是套用在手工挑選的四維向量上。運算與 transformer 完全相同。">
+                Real scaled dot-product attention — softmax(QK<sup>T</sup>/√d) — over toy
+                four-dimensional vectors. The arithmetic is the same one a
+                transformer runs; only the vectors are hand-picked.
+              </p>
+              <div class="lab-stage lab-stage-attn">
+                <div class="attn-tokens" data-attn-tokens role="group" aria-label="Hover a token to see its attention weights"></div>
+                <div class="attn-bars" data-attn-bars aria-hidden="true"></div>
+              </div>
+              <p class="lab-readout">
+                <span>query <b data-attn-query>—</b></span>
+                <span>strongest <b data-attn-top>—</b></span>
+                <span>d = 4 · softmax</span>
+              </p>
+            </article>
+            </div>
+
+            <div class="lab-column">
               <article class="lab-card" aria-labelledby="lab-curve-title">
                 <div class="lab-head">
-                  <p class="lab-index">02 / Training dynamics</p>
-                  <h3 id="lab-curve-title">Where validation leaves training</h3>
+                  <p class="lab-index" data-zh="02 / 訓練動態">02 / Training dynamics</p>
+                  <h3 id="lab-curve-title" data-zh="驗證曲線何時與訓練分家">Where validation leaves training</h3>
                 </div>
-                <p class="lab-copy">
+                <p class="lab-copy" data-zh="這是示意曲線，不是實測結果。訓練損失持續下降，驗證損失卻回頭上升。那個轉折之後的落差，就是模型在記憶而非泛化。">
                   An illustrative run, not a measured one. Training loss keeps
                   falling; validation turns back up. The gap after that turn is
                   the model memorising rather than generalising.
@@ -841,10 +869,10 @@
 
               <article class="lab-card" aria-labelledby="lab-net-title">
                 <div class="lab-head">
-                  <p class="lab-index">03 / Inference</p>
-                  <h3 id="lab-net-title">One forward pass</h3>
+                  <p class="lab-index" data-zh="03 / 推論">03 / Inference</p>
+                  <h3 id="lab-net-title" data-zh="一次前向傳播">One forward pass</h3>
                 </div>
-                <p class="lab-copy">
+                <p class="lab-copy" data-zh="激活值由左至右穿過一個小型全連接網路。將游標移到任一單元，即可看出是哪些連線餵給它。">
                   Activations moving left to right through a small dense network.
                   Hover a unit to isolate what feeds it.
                 </p>
@@ -858,6 +886,32 @@
                   <span>ReLU · softmax</span>
                 </p>
               </article>
+            <article class="lab-card" aria-labelledby="lab-gd-title">
+              <div class="lab-head">
+                <p class="lab-index" data-zh="05 / 最佳化">05 / Optimisation</p>
+                <h3 id="lab-gd-title" data-zh="看得見的學習率">Learning rate, seen</h3>
+              </div>
+              <p class="lab-copy" data-zh="在一個病態條件的二次碗上做梯度下降。步伐太小會爬得很慢；太大則在山谷間來回震盪；一旦超過 <em>2/λ<sub>max</sub></em>，整個過程直接發散。">
+                Gradient descent on an ill-conditioned quadratic bowl. Small
+                steps crawl; large ones zig-zag across the valley; past
+                <em>2/λ<sub>max</sub></em> the run diverges outright.
+              </p>
+              <div class="lab-stage lab-stage-gd">
+                <canvas data-gd-canvas width="640" height="420" role="img"
+                  aria-label="Contour plot of a quadratic bowl with the path taken by gradient descent"></canvas>
+              </div>
+              <div class="lab-controls">
+                <label class="lab-slider">
+                  <span>learning rate</span>
+                  <input type="range" data-gd-lr min="2" max="215" value="60" aria-label="Learning rate" />
+                </label>
+              </div>
+              <p class="lab-readout">
+                <span>lr <b data-gd-lr-out>0.60</b></span>
+                <span>steps <b data-gd-steps>—</b></span>
+                <span data-gd-state>converged</span>
+              </p>
+            </article>
             </div>
           </div>
         </div>
@@ -866,14 +920,14 @@
       <section class="section about-section" id="about" aria-labelledby="about-title">
         <div class="container">
           <div class="section-heading section-heading-light">
-            <h2 id="about-title">About TerryH Huang</h2>
+            <h2 id="about-title" data-zh="關於 黃樺裕">About TerryH Huang</h2>
             <span aria-hidden="true"></span>
           </div>
           <div class="about-grid">
             <p class="about-statement">
-              <span class="about-line">I want to understand</span>
+              <span class="about-line" data-zh="我想理解的">I want to understand</span>
               <span class="about-line">not only <em>how</em> tools work,</span>
-              <span class="about-line">but the principles that make them reliable.</span>
+              <span class="about-line" data-zh="而是讓它們可靠的原理。">but the principles that make them reliable.</span>
             </p>
             <div class="about-copy">
               <p>
@@ -927,20 +981,20 @@
       <section class="section" id="faq" aria-labelledby="faq-title">
         <div class="container">
           <div class="section-heading">
-            <h2 id="faq-title">Frequently Asked Questions</h2>
+            <h2 id="faq-title" data-zh="常見問題">Frequently Asked Questions</h2>
             <span aria-hidden="true"></span>
           </div>
           <div class="about-grid">
             <article>
-              <h3>Who is TerryH Huang?</h3>
-              <p class="project-description">
+              <h3 data-zh="黃樺裕是誰？">Who is TerryH Huang?</h3>
+              <p class="project-description" data-zh="黃樺裕（Huang Hua Yu，TerryH）是一位機器學習與軟體工程開發者。">
                 TerryH Huang, also known as 黃樺裕 or Huang Hua Yu, is a machine
                 learning and software engineering developer.
               </p>
             </article>
             <article>
-              <h3>What does TerryH Huang work on?</h3>
-              <p class="project-description">
+              <h3 data-zh="黃樺裕在做什麼？">What does TerryH Huang work on?</h3>
+              <p class="project-description" data-zh="他的工作聚焦於機器學習、演算法、後端系統、FastAPI、Docker，以及實際的 AI 專案。">
                 His work focuses on machine learning, algorithms, backend systems,
                 FastAPI, Docker, and practical AI projects.
               </p>
@@ -952,24 +1006,24 @@
       <section class="section principles-section" id="principles" aria-labelledby="principles-title">
         <div class="container">
           <div class="section-heading">
-            <h2 id="principles-title">How I Work</h2>
+            <h2 id="principles-title" data-zh="我怎麼工作">How I Work</h2>
             <span aria-hidden="true"></span>
           </div>
           <div class="principles-grid">
             <article>
               <p>01</p>
-              <h3>Start with the data</h3>
-              <span>Understand inputs, ownership, and constraints before choosing a model.</span>
+              <h3 data-zh="從資料開始">Start with the data</h3>
+              <span data-zh="在選模型之前，先弄清楚輸入、歸屬與限制。">Understand inputs, ownership, and constraints before choosing a model.</span>
             </article>
             <article>
               <p>02</p>
-              <h3>Measure honestly</h3>
-              <span>Use validation and error analysis to separate progress from optimism.</span>
+              <h3 data-zh="誠實地量測">Measure honestly</h3>
+              <span data-zh="用驗證與錯誤分析，把真正的進展和一廂情願分開。">Use validation and error analysis to separate progress from optimism.</span>
             </article>
             <article>
               <p>03</p>
-              <h3>Build for clarity</h3>
-              <span>Prefer readable systems that can be tested, explained, and improved.</span>
+              <h3 data-zh="為清晰而建">Build for clarity</h3>
+              <span data-zh="偏好可讀的系統 —— 能被測試、被解釋、被改進。">Prefer readable systems that can be tested, explained, and improved.</span>
             </article>
           </div>
         </div>
@@ -978,8 +1032,8 @@
       <section class="contact-section" id="contact" aria-labelledby="contact-title">
         <div class="container contact-grid">
           <div>
-            <p class="eyebrow">Open to learning and collaboration</p>
-            <h2 id="contact-title" data-split="chars">Let’s build something useful.</h2>
+            <p class="eyebrow" data-zh="歡迎交流與合作">Open to learning and collaboration</p>
+            <h2 id="contact-title" data-split="chars" data-zh="一起做點有用的東西。">Let’s build something useful.</h2>
           </div>
           <div class="contact-actions">
             <a class="button" href="mailto:cdexswzaq0110@gmail.com" data-magnetic>Send an email</a>
@@ -1000,9 +1054,9 @@
     <footer class="site-footer">
       <div class="container footer-inner">
         <p>TerryH Huang</p>
-        <p>Aspiring Machine Learning Engineer</p>
+        <p data-zh="機器學習工程師">Aspiring Machine Learning Engineer</p>
         <a href="#top" class="to-top" data-magnetic>
-          <span>Back to top ↑</span>
+          <span data-zh="回到頂端 ↑">Back to top ↑</span>
           <svg class="to-top-ring" viewBox="0 0 36 36" aria-hidden="true" focusable="false">
             <circle cx="18" cy="18" r="16" />
             <circle cx="18" cy="18" r="16" class="to-top-ring-value" />

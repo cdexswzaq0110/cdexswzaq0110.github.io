@@ -546,6 +546,96 @@ h3,
 }
 
 /* ---------------------------------------------------------------
+   Header controls + language toggle
+   --------------------------------------------------------------- */
+
+.header-end {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: clamp(0.85rem, 2vw, 1.5rem);
+}
+
+.header-link {
+  justify-self: auto;
+}
+
+.lang-toggle {
+  display: inline-flex;
+  min-height: 2.2rem;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.15rem;
+  border: 0;
+  color: inherit;
+  background: none;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  scale: var(--press, 1);
+  transition: scale 160ms var(--ease-out);
+}
+
+.lang-toggle:active {
+  --press: 0.94;
+}
+
+.lang-toggle i {
+  width: 1px;
+  height: 0.72rem;
+  background: currentColor;
+  opacity: 0.4;
+}
+
+/* The inactive half recedes rather than disappearing, so the control still
+   reads as a pair of choices. */
+.lang-toggle .lang-zh,
+.lang-toggle .lang-en {
+  transition: opacity 260ms var(--ease-out);
+}
+
+.lang-toggle .lang-zh {
+  opacity: 0.38;
+}
+
+.lang-zh .lang-toggle .lang-zh {
+  opacity: 1;
+}
+
+.lang-zh .lang-toggle .lang-en {
+  opacity: 0.38;
+}
+
+/* Chinese sets its own rhythm: no uppercasing, and looser tracking hurts it. */
+.lang-zh .hero h1,
+.lang-zh .about-statement,
+.lang-zh .contact-section h2,
+.lang-zh .page-hero h1 {
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.lang-zh .section-heading h2,
+.lang-zh .skill-column h3,
+.lang-zh .principles-grid h3 {
+  letter-spacing: 0.1em;
+  text-transform: none;
+}
+
+.lang-zh .eyebrow,
+.lang-zh .lab-index,
+.lang-zh .status-pill,
+.lang-zh .filter-chip,
+.lang-zh .site-nav a,
+.lang-zh .nav-sheet-links a {
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+
+/* ---------------------------------------------------------------
    Hero
    --------------------------------------------------------------- */
 
@@ -1561,6 +1651,123 @@ h3,
   text-transform: uppercase;
 }
 
+/* Attention */
+
+.lab-stage-attn {
+  padding: 1.1rem;
+}
+
+.attn-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.attn-token {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  /* Weight drives the ink behind the token, so the row reads as a heatmap. */
+  background: rgb(17 17 17 / calc(var(--attn, 0) * 85%));
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 260ms var(--ease-out), color 260ms var(--ease-out),
+    border-color 260ms var(--ease-out);
+}
+
+.attn-token:hover,
+.attn-token:focus-visible {
+  border-color: var(--frame);
+}
+
+/* Past roughly a third of the weight the ink behind the token is dark enough
+   to need light text. JS decides, rather than matching on the style string. */
+.attn-token.is-strong {
+  color: var(--white);
+}
+
+.attn-token.is-query {
+  border-color: var(--ink);
+  border-width: 2px;
+  padding: calc(0.4rem - 1px) calc(0.6rem - 1px);
+}
+
+.attn-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+  height: 2.6rem;
+  margin-top: 0.9rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+}
+
+.attn-bars i {
+  flex: 1;
+  min-height: 1px;
+  height: calc(var(--attn, 0) * 100%);
+  background: var(--ink);
+  transition: height 320ms var(--ease-out);
+}
+
+/* Gradient descent */
+
+.lab-stage-gd {
+  aspect-ratio: 16 / 10;
+}
+
+.lab-stage-gd canvas {
+  height: 100%;
+}
+
+.lab-slider {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lab-slider input {
+  flex: 1;
+  min-width: 0;
+  height: 1.6rem;
+  accent-color: var(--ink);
+  cursor: grab;
+}
+
+.lab-slider input:active {
+  cursor: grabbing;
+}
+
+[data-gd-state] {
+  font-variant-numeric: tabular-nums;
+}
+
+[data-gd-state][data-gd-state="diverged"] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Lab columns */
+
+.lab-column {
+  display: grid;
+  align-content: start;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  min-width: 0;
+}
+
 @media (max-width: 900px) {
   .lab-grid {
     grid-template-columns: 1fr;
@@ -2569,6 +2776,10 @@ h3,
   .site-nav,
   .header-link {
     display: none;
+  }
+
+  .header-end {
+    gap: 0.9rem;
   }
 
   .header-inner {

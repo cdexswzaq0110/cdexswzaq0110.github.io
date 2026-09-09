@@ -18,8 +18,8 @@
     <meta property="og:image" content="https://cdexswzaq0110.github.io/assets/project-archive.webp" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <link rel="stylesheet" href="styles.css?v=12" />
-    <script src="script.js?v=12" defer></script>
+    <link rel="stylesheet" href="styles.css?v=13" />
+    <script src="script.js?v=13" defer></script>
     <script>
       /* Apply the remembered motion choice before first paint. */
       (function () {
@@ -67,23 +67,28 @@
       <div class="container header-inner">
         <a class="brand" href="index.html" data-scramble aria-label="TerryH Huang, home">Terry H.</a>
         <nav class="site-nav" aria-label="Primary navigation">
-          <a href="index.html#work" data-scramble>Work</a>
-          <a href="resume.html" data-scramble>Resume</a>
-          <a href="links.html" aria-current="page" data-scramble>Links</a>
+          <a href="index.html#work" data-scramble data-zh="作品">Work</a>
+          <a href="resume.html" data-scramble data-zh="履歷">Resume</a>
+          <a href="links.html" aria-current="page" data-scramble data-zh="連結">Links</a>
         </nav>
-        <a class="header-link" href="https://github.com/cdexswzaq0110" target="_blank" rel="noreferrer" data-magnetic>
-          GitHub <span aria-hidden="true">↗</span>
-        </a>
-        <button
-          class="nav-toggle"
-          type="button"
-          data-nav-toggle
-          aria-expanded="false"
-          aria-controls="site-menu"
-        >
-          <span class="nav-toggle-lines" aria-hidden="true"><i></i><i></i></span>
-          Menu
-        </button>
+        <div class="header-end">
+          <button class="lang-toggle" type="button" data-lang-toggle aria-label="Switch language / 切換語言">
+            <span class="lang-en">EN</span><i aria-hidden="true"></i><span class="lang-zh">中</span>
+          </button>
+          <a class="header-link" href="https://github.com/cdexswzaq0110" target="_blank" rel="noreferrer" data-magnetic>
+            GitHub <span aria-hidden="true">↗</span>
+          </a>
+          <button
+            class="nav-toggle"
+            type="button"
+            data-nav-toggle
+            aria-expanded="false"
+            aria-controls="site-menu"
+          >
+            <span class="nav-toggle-lines" aria-hidden="true"><i></i><i></i></span>
+            Menu
+          </button>
+        </div>
       </div>
     </header>
 
@@ -91,8 +96,8 @@
       <section class="page-hero">
         <div class="container page-hero-grid">
           <div>
-            <p class="eyebrow">Find me online</p>
-            <h1 data-split="words">Links</h1>
+            <p class="eyebrow" data-zh="在網路上找到我">Find me online</p>
+            <h1 data-split="words" data-zh="連結">Links</h1>
           </div>
           <p class="page-lead">
             Profiles, contact channels, and direct paths to selected engineering work.
@@ -103,7 +108,7 @@
       <section class="page-section">
         <div class="container link-groups">
           <section aria-labelledby="connect-title">
-            <h2 id="connect-title">Connect</h2>
+            <h2 id="connect-title" data-zh="聯絡">Connect</h2>
             <div class="link-list">
               <a href="https://github.com/cdexswzaq0110" target="_blank" rel="noreferrer"><span>GitHub</span><small>@cdexswzaq0110</small><b>↗</b></a>
               <a href="https://www.linkedin.com/in/%E6%A8%BA%E8%A3%95-%E9%BB%83-terryh/" target="_blank" rel="noreferrer"><span>LinkedIn</span><small>Huang Hua Yu · TerryH</small><b>↗</b></a>
@@ -112,7 +117,7 @@
           </section>
 
           <section aria-labelledby="project-links-title">
-            <h2 id="project-links-title">Selected repositories</h2>
+            <h2 id="project-links-title" data-zh="精選程式庫">Selected repositories</h2>
             <div class="link-list">
               <a href="https://github.com/cdexswzaq0110/build-moat-system-design-portfolio" target="_blank" rel="noreferrer" data-preview="assets/system-design.webp"><span>System Design Portfolio</span><small>Backend · APIs · Documentation</small><b>↗</b></a>
               <a href="https://github.com/cdexswzaq0110/DSA" target="_blank" rel="noreferrer" data-preview="assets/algorithms.webp"><span>Data Structures &amp; Algorithms</span><small>C++ · Algorithms</small><b>↗</b></a>
@@ -130,7 +135,7 @@
     <footer class="site-footer">
       <div class="container footer-inner">
         <p>TerryH Huang</p>
-        <p>Always learning. Always building.</p>
+        <p data-zh="持續學習，持續建造。">Always learning. Always building.</p>
         <a href="index.html" data-magnetic>Home</a>
         <button class="motion-toggle" type="button" data-motion-toggle aria-pressed="false">
           <i aria-hidden="true"></i>Motion <span data-motion-state>Off</span>

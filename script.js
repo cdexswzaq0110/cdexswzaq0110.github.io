@@ -1792,6 +1792,302 @@ function initNetworkLab() {
   });
 }
 
+/* Real scaled dot-product attention, softmax(QK^T / sqrt(d)), over toy
+   four-dimensional vectors. The arithmetic is a transformer's; only the
+   vectors are hand-picked so the pattern reads clearly. */
+function initAttentionLab() {
+  const host = document.querySelector("[data-attn-tokens]");
+  const bars = document.querySelector("[data-attn-bars]");
+
+  if (!host || !bars) return;
+
+  const queryOut = document.querySelector("[data-attn-query]");
+  const topOut = document.querySelector("[data-attn-top]");
+
+  /* Four crude dimensions — subject, verb, object, function word — with enough
+     magnitude that the softmax actually separates. Values this small produce a
+     near-uniform distribution, which shows nothing. */
+  const tokens = [
+    { text: "the", v: [0.2, 0.1, 0.1, 3.0] },
+    { text: "model", v: [3.0, 0.3, 0.6, 0.2] },
+    { text: "learns", v: [0.6, 3.0, 0.4, 0.2] },
+    { text: "which", v: [0.3, 0.4, 1.6, 1.8] },
+    { text: "words", v: [1.0, 0.3, 3.0, 0.2] },
+    { text: "to", v: [0.2, 0.2, 0.2, 2.6] },
+    { text: "attend", v: [0.4, 2.6, 1.8, 0.4] },
+    { text: "to", v: [0.2, 0.2, 0.2, 2.6] },
+  ];
+
+  const d = 4;
+  const scale = Math.sqrt(d);
+
+  function attention(from) {
+    const logits = tokens.map((token) => {
+      let dot = 0;
+
+      for (let i = 0; i < d; i += 1) dot += tokens[from].v[i] * token.v[i];
+
+      return dot / scale;
+    });
+
+    const max = Math.max(...logits);
+    const exps = logits.map((value) => Math.exp(value - max));
+    const sum = exps.reduce((total, value) => total + value, 0);
+
+    return exps.map((value) => value / sum);
+  }
+
+  const chips = tokens.map((token, index) => {
+    const chip = document.createElement("button");
+
+    chip.type = "button";
+    chip.className = "attn-token";
+    chip.textContent = token.text;
+    chip.dataset.index = String(index);
+    host.append(chip);
+
+    return chip;
+  });
+
+  const rows = tokens.map(() => {
+    const bar = document.createElement("i");
+
+    bars.append(bar);
+
+    return bar;
+  });
+
+  function show(from) {
+    const weights = attention(from);
+    let best = 0;
+
+    weights.forEach((weight, index) => {
+      if (weight > weights[best]) best = index;
+    });
+
+    chips.forEach((chip, index) => {
+      chip.style.setProperty("--attn", weights[index].toFixed(3));
+      chip.classList.toggle("is-query", index === from);
+      chip.classList.toggle("is-strong", weights[index] > 0.3);
+    });
+
+    rows.forEach((bar, index) => {
+      bar.style.setProperty("--attn", weights[index].toFixed(3));
+    });
+
+    if (queryOut) queryOut.textContent = tokens[from].text;
+    if (topOut) topOut.textContent = `${tokens[best].text} ${(weights[best] * 100).toFixed(0)}%`;
+  }
+
+  function clear() {
+    chips.forEach((chip) => {
+      chip.style.removeProperty("--attn");
+      chip.classList.remove("is-query", "is-strong");
+    });
+    rows.forEach((bar) => bar.style.removeProperty("--attn"));
+    if (queryOut) queryOut.textContent = "—";
+    if (topOut) topOut.textContent = "—";
+  }
+
+  chips.forEach((chip, index) => {
+    chip.addEventListener("pointerenter", () => show(index));
+    chip.addEventListener("focus", () => show(index));
+    chip.addEventListener("click", () => show(index));
+  });
+
+  host.addEventListener("pointerleave", clear);
+
+  /* Show something meaningful before anyone touches it. */
+  show(6);
+}
+
+/* Gradient descent on an ill-conditioned quadratic. The point of the piece is
+   that one number decides between crawling, zig-zagging and diverging. */
+function initDescentLab() {
+  const canvas = document.querySelector("[data-gd-canvas]");
+  const context = canvas?.getContext?.("2d");
+
+  if (!canvas || !context) return;
+
+  const slider = document.querySelector("[data-gd-lr]");
+  const lrOut = document.querySelector("[data-gd-lr-out]");
+  const stepsOut = document.querySelector("[data-gd-steps]");
+  const stateOut = document.querySelector("[data-gd-state]");
+
+  const width = canvas.width;
+  const height = canvas.height;
+  /* f = (a x^2 + b y^2) / 2 — a is the stiff direction, so 2/a is the limit. */
+  const a = 1;
+  const b = 0.08;
+  const start = { x: -2.4, y: 2.5 };
+  const spanX = 3.2;
+  const spanY = 3.4;
+
+  const toCanvas = (x, y) => [
+    ((x + spanX) / (spanX * 2)) * width,
+    ((spanY - y) / (spanY * 2)) * height,
+  ];
+
+  function run(lr) {
+    const path = [{ ...start }];
+    let point = { ...start };
+    let diverged = false;
+
+    for (let step = 0; step < 60; step += 1) {
+      point = { x: point.x - lr * a * point.x, y: point.y - lr * b * point.y };
+
+      if (!Number.isFinite(point.x) || Math.abs(point.x) > 40 || Math.abs(point.y) > 40) {
+        diverged = true;
+        break;
+      }
+
+      path.push({ ...point });
+
+      if (Math.hypot(point.x, point.y) < 0.02) break;
+    }
+
+    return { path, diverged };
+  }
+
+  function draw(lr) {
+    context.clearRect(0, 0, width, height);
+
+    /* Contours of the bowl: ellipses of constant loss. */
+    context.lineWidth = 1;
+
+    for (let i = 1; i <= 7; i += 1) {
+      const level = (i / 7) * 3.4;
+
+      context.beginPath();
+      context.strokeStyle = `rgba(17, 17, 17, ${(0.05 + (7 - i) * 0.016).toFixed(3)})`;
+      context.ellipse(
+        ...toCanvas(0, 0),
+        (level / Math.sqrt(a) / (spanX * 2)) * width,
+        (level / Math.sqrt(b) / (spanY * 2)) * height,
+        0,
+        0,
+        Math.PI * 2,
+      );
+      context.stroke();
+    }
+
+    /* The valley floor, so the zig-zag has something to cross. */
+    context.beginPath();
+    context.strokeStyle = "rgba(17, 17, 17, 0.16)";
+    context.setLineDash([3, 5]);
+    context.moveTo(...toCanvas(0, -spanY));
+    context.lineTo(...toCanvas(0, spanY));
+    context.stroke();
+    context.setLineDash([]);
+
+    const { path, diverged } = run(lr);
+
+    context.beginPath();
+    context.strokeStyle = diverged ? "#a39e9a" : "#111111";
+    context.lineWidth = 1.6;
+    path.forEach((point, index) => {
+      const [x, y] = toCanvas(point.x, point.y);
+
+      if (index === 0) context.moveTo(x, y);
+      else context.lineTo(x, y);
+    });
+    context.stroke();
+
+    path.forEach((point, index) => {
+      const [x, y] = toCanvas(point.x, point.y);
+
+      context.beginPath();
+      context.fillStyle = index === 0 ? "#111111" : "rgba(17, 17, 17, 0.45)";
+      context.arc(x, y, index === 0 ? 5 : 2.6, 0, Math.PI * 2);
+      context.fill();
+    });
+
+    if (stepsOut) stepsOut.textContent = diverged ? "—" : String(path.length - 1);
+
+    if (stateOut) {
+      const key = diverged ? "diverged" : lr > 1 ? "zig-zagging" : lr < 0.15 ? "crawling" : "converged";
+
+      stateOut.textContent = key;
+      stateOut.dataset.gdState = key;
+    }
+  }
+
+  function update() {
+    const lr = Number(slider?.value ?? 60) / 100;
+
+    if (lrOut) lrOut.textContent = lr.toFixed(2);
+
+    draw(lr);
+  }
+
+  slider?.addEventListener("input", update);
+  update();
+}
+
+/* ---------------------------------------------------------------
+   Language — English is the document, Chinese is an overlay
+   --------------------------------------------------------------- */
+
+/* English stays in the markup so a crawler sees exactly what it saw before;
+   the Chinese lives in data-zh and is swapped in on request. */
+function initLanguage() {
+  const toggle = document.querySelector("[data-lang-toggle]");
+  /* Never rewrite executable or structured content — a stray data-zh on a
+     JSON-LD block would otherwise destroy the structured data on switch. */
+  const nodes = [...document.querySelectorAll("[data-zh]")].filter(
+    (node) => !node.closest("script, style, template"),
+  );
+
+  if (!toggle || !nodes.length) return;
+
+  const english = new Map(nodes.map((node) => [node, node.innerHTML]));
+
+  function apply(lang) {
+    const zh = lang === "zh";
+
+    nodes.forEach((node) => {
+      node.innerHTML = zh ? node.dataset.zh : english.get(node);
+    });
+
+    root.lang = zh ? "zh-Hant" : "en";
+    root.classList.toggle("lang-zh", zh);
+    toggle.setAttribute("aria-pressed", String(zh));
+
+    /* Split text caches its own markup, so re-run it on the new strings. */
+    if (root.classList.contains("motion-ready")) {
+      document.querySelectorAll("[data-split]").forEach((element) => {
+        if (element.querySelector(".split-word, .split-char, .split-inner")) return;
+
+        applySplit(element);
+        element.closest(".reveal, .section-intro")?.classList.add("is-visible");
+      });
+    }
+  }
+
+  let stored = null;
+
+  try {
+    stored = window.localStorage.getItem("th-lang");
+  } catch (error) {
+    /* storage blocked — the page simply stays in English */
+  }
+
+  if (stored === "zh") apply("zh");
+  else toggle.setAttribute("aria-pressed", "false");
+
+  toggle.addEventListener("click", () => {
+    const next = root.classList.contains("lang-zh") ? "en" : "zh";
+
+    apply(next);
+
+    try {
+      window.localStorage.setItem("th-lang", next);
+    } catch (error) {
+      /* the choice just will not persist */
+    }
+  });
+}
+
 /* Measured, not claimed — the readout beside the lab shows the real rate. */
 function initFpsReadout() {
   const out = document.querySelector("[data-lab-fps]");
@@ -1887,9 +2183,12 @@ initProjectDirectory();
 initNavSheet();
 initHeroCanvas();
 initMotionToggle();
+initLanguage();
 initBoundaryLab();
 initCurveLab();
 initNetworkLab();
+initAttentionLab();
+initDescentLab();
 initFpsReadout();
 
 if (!motion) {
