@@ -1445,25 +1445,53 @@ function initNavSheet() {
    14. Motion opt-in
    --------------------------------------------------------------- */
 
+function setMotion(value) {
+  try {
+    window.localStorage.setItem("th-motion", value);
+  } catch (error) {
+    /* private mode — the choice simply will not persist */
+  }
+
+  /* Half the motion layer is decided at boot, so re-run it cleanly. */
+  window.location.reload();
+}
+
 function initMotionToggle() {
   const toggle = document.querySelector("[data-motion-toggle]");
+  const invite = document.querySelector("[data-motion-invite]");
 
-  if (!toggle) return;
+  if (toggle) {
+    const state = toggle.querySelector("[data-motion-state]");
 
-  const state = toggle.querySelector("[data-motion-state]");
+    toggle.setAttribute("aria-pressed", String(motion));
+    if (state) state.textContent = motion ? "On" : "Off";
+    toggle.addEventListener("click", () => setMotion(motion ? "off" : "on"));
+  }
 
-  toggle.setAttribute("aria-pressed", String(motion));
-  if (state) state.textContent = motion ? "On" : "Off";
+  if (!invite) return;
 
-  toggle.addEventListener("click", () => {
+  let dismissed = false;
+
+  try {
+    dismissed = window.localStorage.getItem("th-motion-invite") === "dismissed";
+  } catch (error) {
+    /* storage blocked — show the invite, it is dismissable either way */
+  }
+
+  /* A footer toggle is easy to miss on a page this long, so anyone arriving
+     with the motion layer switched off gets told once, in view. */
+  if (!motion && reducedMotion.matches && !dismissed) invite.hidden = false;
+
+  invite.querySelector("[data-motion-enable]")?.addEventListener("click", () => setMotion("on"));
+
+  invite.querySelector("[data-motion-dismiss]")?.addEventListener("click", () => {
+    invite.hidden = true;
+
     try {
-      window.localStorage.setItem("th-motion", motion ? "off" : "on");
+      window.localStorage.setItem("th-motion-invite", "dismissed");
     } catch (error) {
-      /* private mode — the choice simply will not persist */
+      /* it will simply appear again next visit */
     }
-
-    /* Half the motion layer is decided at boot, so re-run it cleanly. */
-    window.location.reload();
   });
 }
 

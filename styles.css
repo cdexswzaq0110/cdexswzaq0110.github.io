@@ -2460,6 +2460,99 @@ h3,
    Motion opt-in control
    --------------------------------------------------------------- */
 
+/* Shown in view, once, to anyone whose motion layer is switched off.
+   JS decides when — it stays hidden without JS. */
+.motion-invite {
+  position: fixed;
+  left: 50%;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  max-width: min(calc(100vw - 2rem), 34rem);
+  padding: 0.85rem 0.9rem 0.85rem 1.15rem;
+  border-radius: 999px;
+  color: var(--white);
+  background: var(--ink);
+  box-shadow: 0 1rem 2.5rem rgb(17 17 17 / 28%);
+  translate: -50% 0;
+}
+
+.motion-invite[hidden] {
+  display: none;
+}
+
+.motion-invite p {
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.motion-invite button {
+  flex: none;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--font-display);
+  -webkit-tap-highlight-color: transparent;
+  scale: var(--press, 1);
+  transition: scale 160ms var(--ease-out), background 200ms var(--ease-out);
+}
+
+.motion-invite button:active {
+  --press: 0.96;
+}
+
+.motion-invite-yes {
+  min-height: 2.4rem;
+  padding-inline: 1.1rem;
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--warm);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.motion-invite-yes:hover {
+  background: var(--white);
+}
+
+.motion-invite-no {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  color: var(--white);
+  background: transparent;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.motion-invite-no:hover {
+  background: rgb(255 255 255 / 14%);
+}
+
+@media (max-width: 560px) {
+  .motion-invite {
+    flex-wrap: wrap;
+    border-radius: 1.25rem;
+    left: 1rem;
+    right: 1rem;
+    max-width: none;
+    translate: 0 0;
+  }
+
+  .motion-invite p {
+    flex: 1 1 100%;
+  }
+
+  .motion-invite-yes {
+    flex: 1;
+  }
+}
+
+
 .motion-toggle {
   display: none;
   /* Its own row, so the three-column footer above it is untouched. */
