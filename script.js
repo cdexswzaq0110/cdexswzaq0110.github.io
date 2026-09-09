@@ -10,8 +10,10 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
 const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
-/* The OS setting is the default. A visitor who asks for the full motion layer
-   anyway is remembered, and only ever for their own browser. */
+/* This is a motion-led portfolio, so the full layer is the default and the
+   owner has asked for it explicitly. Visitors whose system requests reduced
+   motion are told so on arrival and can switch it off in one click; the choice
+   is remembered, and only ever in their own browser. */
 function motionChoice() {
   try {
     return window.localStorage.getItem("th-motion");
@@ -20,7 +22,7 @@ function motionChoice() {
   }
 }
 
-const motion = motionChoice() === "on" ? true : !reducedMotion.matches;
+const motion = motionChoice() !== "off";
 
 const clamp = (value, minimum, maximum) => Math.min(Math.max(value, minimum), maximum);
 const lerp = (from, to, amount) => from + (to - from) * amount;
@@ -1478,11 +1480,11 @@ function initMotionToggle() {
     /* storage blocked — show the invite, it is dismissable either way */
   }
 
-  /* A footer toggle is easy to miss on a page this long, so anyone arriving
-     with the motion layer switched off gets told once, in view. */
-  if (!motion && reducedMotion.matches && !dismissed) invite.hidden = false;
+  /* Tell anyone whose system asked for reduced motion that this site is
+     running the full layer, and give them one click to stop it. */
+  if (motion && reducedMotion.matches && !dismissed) invite.hidden = false;
 
-  invite.querySelector("[data-motion-enable]")?.addEventListener("click", () => setMotion("on"));
+  invite.querySelector("[data-motion-enable]")?.addEventListener("click", () => setMotion("off"));
 
   invite.querySelector("[data-motion-dismiss]")?.addEventListener("click", () => {
     invite.hidden = true;

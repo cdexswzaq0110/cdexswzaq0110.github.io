@@ -39,8 +39,8 @@
     <meta name="twitter:image" content="https://cdexswzaq0110.github.io/assets/system-design.webp" />
 
     <link rel="preload" as="image" href="assets/cappuccino.webp" fetchpriority="high" />
-    <link rel="stylesheet" href="styles.css?v=9" />
-    <script src="script.js?v=9" defer></script>
+    <link rel="stylesheet" href="styles.css?v=10" />
+    <script src="script.js?v=10" defer></script>
     <script>
       /* Set intro + capability flags before first paint to avoid a flash. */
       (function () {
@@ -48,13 +48,9 @@
         root.classList.add("js");
         try {
           var chosen = window.localStorage.getItem("th-motion");
-          if (chosen === "on") root.classList.add("motion-on");
-          var reduce =
-            chosen === "on"
-              ? false
-              : window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if (chosen !== "off") root.classList.add("motion-on");
           var seen = window.sessionStorage.getItem("th-intro") === "1";
-          if (!reduce && !seen) root.classList.add("is-loading");
+          if (chosen !== "off" && !seen) root.classList.add("is-loading");
         } catch (error) {
           /* storage blocked — skip the intro rather than risk trapping content */
         }
@@ -264,49 +260,23 @@
       <section class="section work-section" id="work" aria-labelledby="work-title">
         <div class="container">
           <div class="section-heading">
-            <h2 id="work-title">Selected work<span class="work-period" aria-hidden="true">.</span></h2>
+            <h2 id="work-title">Selected Work</h2>
             <span aria-hidden="true"></span>
           </div>
           <div class="section-intro">
             <p data-split="words">From first principles to working systems.<br />A collection of things I’ve built and studied.</p>
-            <p class="section-count"><span data-project-count>01</span> / <strong data-project-total>14</strong> projects</p>
+            <p class="section-count">
+              <span data-project-count>01</span> / <span data-project-total>14</span> projects
+            </p>
           </div>
 
-          <div class="work-toolbar">
-            <div class="filter-bar" role="group" aria-label="Filter projects by focus">
-              <button type="button" class="filter-chip is-active" data-filter="all" aria-pressed="true" aria-controls="project-collection">All work <sup>14</sup></button>
-              <button type="button" class="filter-chip" data-filter="ml" aria-pressed="false" aria-controls="project-collection">Machine learning <sup>08</sup></button>
-              <button type="button" class="filter-chip" data-filter="backend" aria-pressed="false" aria-controls="project-collection">Systems &amp; agents <sup>08</sup></button>
-              <button type="button" class="filter-chip" data-filter="foundations" aria-pressed="false" aria-controls="project-collection">Foundations <sup>02</sup></button>
+          <div class="filter-bar" role="group" aria-label="Filter projects by focus">
+              <button type="button" class="filter-chip is-active" data-filter="all" aria-pressed="true">All work <sup>14</sup></button>
+              <button type="button" class="filter-chip" data-filter="ml" aria-pressed="false">Machine learning <sup>08</sup></button>
+              <button type="button" class="filter-chip" data-filter="backend" aria-pressed="false">Systems &amp; agents <sup>08</sup></button>
+              <button type="button" class="filter-chip" data-filter="foundations" aria-pressed="false">Foundations <sup>02</sup></button>
             </div>
-            <p class="work-filter-status" data-filter-status role="status" aria-live="polite">14 projects · All work</p>
-          </div>
-
-          <div class="work-layout">
-            <details class="work-directory" data-work-directory open>
-              <summary>Project index <span aria-hidden="true">↗</span></summary>
-              <nav aria-label="Project index">
-                <ol>
-                  <li><a href="#project-system-design" data-project-jump="system-design"><span>01</span>System Design</a></li>
-                  <li><a href="#project-algorithms" data-project-jump="algorithms"><span>02</span>Data Structures &amp; Algorithms</a></li>
-                  <li><a href="#project-serendipity" data-project-jump="serendipity"><span>03</span>Serendipity–Epiphany</a></li>
-                  <li><a href="#project-agent-kernel" data-project-jump="agent-kernel"><span>04</span>Agent Kernel</a></li>
-                  <li><a href="#project-ordostack" data-project-jump="ordostack"><span>05</span>OrdoStack</a></li>
-                  <li><a href="#project-veloguard" data-project-jump="veloguard"><span>06</span>VeloGuard</a></li>
-                  <li><a href="#project-esp8266" data-project-jump="esp8266"><span>07</span>ESP8266 Distance Sensor</a></li>
-                  <li><a href="#project-indoor-positioning" data-project-jump="indoor-positioning"><span>08</span>Indoor Positioning</a></li>
-                  <li><a href="#project-titanic" data-project-jump="titanic"><span>09</span>Titanic Control Tower</a></li>
-                  <li><a href="#project-house-prices" data-project-jump="house-prices"><span>10</span>House Prices</a></li>
-                  <li><a href="#project-signalweave" data-project-jump="signalweave"><span>11</span>SignalWeave</a></li>
-                  <li><a href="#project-skin-lesion" data-project-jump="skin-lesion"><span>12</span>Skin Lesion Vision</a></li>
-                  <li><a href="#project-thermoforge" data-project-jump="thermoforge"><span>13</span>ThermoForge</a></li>
-                  <li><a href="#project-more-projects" data-project-jump="more-projects"><span>14</span>More Projects</a></li>
-                </ol>
-              </nav>
-              <p class="work-directory-note">Source, decisions, and documentation.<br />Open every project on GitHub.</p>
-            </details>
-
-            <div class="project-grid" id="project-collection" data-project-grid>
+          <div class="project-grid" data-project-grid>
             <article class="project-card" id="project-system-design" tabindex="-1" data-tags="backend">
               <a
                 href="https://github.com/cdexswzaq0110/build-moat-system-design-portfolio"
@@ -786,7 +756,6 @@
               </a>
             </article>
             </div>
-          </div>
         </div>
       </section>
 
@@ -962,9 +931,9 @@
       </div>
     </div>
     <div class="motion-invite" data-motion-invite hidden>
-      <p>Animations are off because your system asks for reduced motion.</p>
-      <button class="motion-invite-yes" type="button" data-motion-enable>Turn motion on</button>
-      <button class="motion-invite-no" type="button" data-motion-dismiss aria-label="Keep motion off">
+      <p>Your system asks for reduced motion. This site is running animations.</p>
+      <button class="motion-invite-yes" type="button" data-motion-enable>Turn motion off</button>
+      <button class="motion-invite-no" type="button" data-motion-dismiss aria-label="Keep animations on">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>

@@ -93,7 +93,6 @@ assert.equal(new Set(cards.map(card => card.image)).size, 14, "Covers must not b
 for (const card of cards) {
   assert.ok(statSync(resolve(root, card.image)).size > 0, `Missing image: ${card.image}`);
   assert.ok(card.alt.length > 20, `Missing descriptive alt text: ${card.id}`);
-  assert.ok(html.includes(`href="#project-${card.id}"`), `Missing index link: ${card.id}`);
 }
 const filters = [...html.matchAll(/<button[^>]*data-filter="([^"]+)"[^>]*>[\s\S]*?<sup>(\d+)<\/sup>/g)];
 assert.equal(filters.length, 4);
@@ -106,4 +105,4 @@ for (const [file, canonical] of [["index.html", ""], ["resume.html", "resume.htm
 }
 assert.ok(statSync(resolve(root, "google02af818ae84c33ec.html")).size > 0);
 assert.ok(readFileSync(resolve(root, "robots.txt"), "utf8").includes("Sitemap: https://cdexswzaq0110.github.io/sitemap.xml"));
-console.log("PASS: 14 ordered projects, unique covers, repository links, directory anchors, filter totals, and SEO files.");
+console.log("PASS: 14 ordered projects, unique covers, repository links, filter totals, and SEO files.");
