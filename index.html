@@ -39,8 +39,8 @@
     <meta name="twitter:image" content="https://cdexswzaq0110.github.io/assets/system-design.webp" />
 
     <link rel="preload" as="image" href="assets/cappuccino.webp" fetchpriority="high" />
-    <link rel="stylesheet" href="styles.css?v=16" />
-    <script src="script.js?v=16" defer></script>
+    <link rel="stylesheet" href="styles.css?v=17" />
+    <script src="script.js?v=17" defer></script>
     <script>
       /* Set intro + capability flags before first paint to avoid a flash. */
       (function () {
@@ -228,6 +228,18 @@
           </div>
 
           <div class="hero-visual">
+            <figure class="hero-fit">
+              <canvas
+                data-fit-canvas
+                width="440"
+                height="240"
+                role="img"
+                aria-label="A small neural network training live, its output curve converging on a sine wave"
+              ></canvas>
+              <figcaption>
+                <span data-zh="正在擬合 &lt;em&gt;sin(2πx)&lt;/em&gt;">fitting <em>sin(2πx)</em></span><b>MSE <i data-fit-loss>—</i></b>
+              </figcaption>
+            </figure>
             <div class="portrait-frame">
               <div class="portrait-media">
                 <img

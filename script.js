@@ -2042,7 +2042,10 @@ function initLanguage() {
 
   /* Most of the page is written in English and carries data-zh. The About
      block is the other way round: its Chinese paragraph stays in the markup
-     for search and carries data-en instead. */
+     for search and carries data-en instead.
+
+     Tag the text node itself, never a container: apply() rewrites innerHTML,
+     which would tear out any live canvas underneath it. */
   const original = new Map(nodes.map((node) => [node, node.innerHTML]));
 
   function apply(lang) {
@@ -2167,6 +2170,192 @@ function initCopyEmail() {
   });
 }
 
+/* ---------------------------------------------------------------
+   Hero: a network actually training, on the first screen
+   --------------------------------------------------------------- */
+
+/* A 1-8-1 tanh network fitting sin(2πx) by real backprop and SGD. Nothing is
+   faked: the curve on screen is the network's forward pass, and the number
+   beside it is its mean squared error. It refits from scratch on a loop. */
+function initHeroFit() {
+  const canvas = document.querySelector("[data-fit-canvas]");
+  const context = canvas?.getContext?.("2d");
+
+  if (!canvas || !context) return;
+
+  const lossOut = document.querySelector("[data-fit-loss]");
+  const epochOut = document.querySelector("[data-fit-epoch]");
+  const width = canvas.width;
+  const height = canvas.height;
+  const HIDDEN = 8;
+  const RATE = 0.06;
+  const STEPS_PER_FRAME = 22;
+
+  /* Fixed sample set, so the fit is comparable run to run. */
+  const samples = Array.from({ length: 34 }, (_, i) => {
+    const x = i / 33;
+
+    return { x, y: Math.sin(x * Math.PI * 2) };
+  });
+
+  let w1;
+  let b1;
+  let w2;
+  let b2;
+  let step;
+  let loss;
+
+  function reset() {
+    /* Small symmetric init — big enough to break symmetry, small enough that
+       tanh does not start saturated. */
+    w1 = Array.from({ length: HIDDEN }, () => (Math.random() - 0.5) * 4);
+    b1 = Array.from({ length: HIDDEN }, () => (Math.random() - 0.5) * 4);
+    w2 = Array.from({ length: HIDDEN }, () => (Math.random() - 0.5) * 1.2);
+    b2 = 0;
+    step = 0;
+    loss = 1;
+  }
+
+  function forward(x) {
+    const h = new Array(HIDDEN);
+    let out = b2;
+
+    for (let i = 0; i < HIDDEN; i += 1) {
+      h[i] = Math.tanh(w1[i] * x + b1[i]);
+      out += w2[i] * h[i];
+    }
+
+    return { h, out };
+  }
+
+  function train() {
+    let total = 0;
+
+    for (let s = 0; s < STEPS_PER_FRAME; s += 1) {
+      const sample = samples[Math.floor(Math.random() * samples.length)];
+      const { h, out } = forward(sample.x);
+      const error = out - sample.y;
+
+      total += error * error;
+
+      /* dL/dout = 2e; tanh' = 1 - h^2 */
+      b2 -= RATE * 2 * error;
+
+      for (let i = 0; i < HIDDEN; i += 1) {
+        const dh = 2 * error * w2[i] * (1 - h[i] * h[i]);
+
+        w2[i] -= RATE * 2 * error * h[i];
+        w1[i] -= RATE * dh * sample.x;
+        b1[i] -= RATE * dh;
+      }
+
+      step += 1;
+    }
+
+    loss = loss * 0.9 + (total / STEPS_PER_FRAME) * 0.1;
+  }
+
+  const toY = (value) => height / 2 - value * (height / 2 - 14);
+  const toX = (value) => 10 + value * (width - 20);
+
+  function draw() {
+    context.clearRect(0, 0, width, height);
+
+    /* Axis */
+    context.beginPath();
+    context.strokeStyle = "rgba(17, 17, 17, 0.12)";
+    context.lineWidth = 1;
+    context.moveTo(10, toY(0));
+    context.lineTo(width - 10, toY(0));
+    context.stroke();
+
+    /* The truth it is chasing */
+    context.beginPath();
+    context.strokeStyle = "rgba(17, 17, 17, 0.22)";
+    context.setLineDash([3, 4]);
+    samples.forEach((sample, i) => {
+      const x = toX(sample.x);
+      const y = toY(sample.y);
+
+      if (i === 0) context.moveTo(x, y);
+      else context.lineTo(x, y);
+    });
+    context.stroke();
+    context.setLineDash([]);
+
+    /* The network's own answer */
+    context.beginPath();
+    context.strokeStyle = "#111111";
+    context.lineWidth = 2;
+    for (let i = 0; i <= 90; i += 1) {
+      const x = i / 90;
+      const y = toY(forward(x).out);
+
+      if (i === 0) context.moveTo(toX(x), y);
+      else context.lineTo(toX(x), y);
+    }
+    context.stroke();
+
+    /* Where it is being corrected */
+    context.fillStyle = "rgba(17, 17, 17, 0.5)";
+    samples.forEach((sample) => {
+      context.beginPath();
+      context.arc(toX(sample.x), toY(sample.y), 1.6, 0, Math.PI * 2);
+      context.fill();
+    });
+  }
+
+  function report() {
+    if (lossOut) lossOut.textContent = loss.toFixed(3);
+    if (epochOut) epochOut.textContent = String(Math.floor(step / samples.length));
+  }
+
+  reset();
+  draw();
+  report();
+
+  if (!motion) return;
+
+  let stop = null;
+  let hold = 0;
+
+  const frame = () => {
+    /* Converged: let the finished fit sit for a beat, then start over. */
+    if (hold > 0) {
+      hold -= 1;
+
+      if (hold === 0) reset();
+
+      draw();
+      report();
+
+      return;
+    }
+
+    train();
+
+    if (loss < 0.0016 && step > 4000) hold = 48;
+
+    draw();
+    report();
+  };
+
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !stop) stop = addFrameTask(frame);
+        else if (!entry.isIntersecting && stop) {
+          stop();
+          stop = null;
+        }
+      },
+      { threshold: 0 },
+    ).observe(canvas);
+  }
+
+  stop = addFrameTask(frame);
+}
+
 /* Measured, not claimed — the readout beside the lab shows the real rate. */
 function initFpsReadout() {
   const out = document.querySelector("[data-lab-fps]");
@@ -2261,6 +2450,7 @@ initFilter();
 initProjectDirectory();
 initNavSheet();
 initHeroCanvas();
+initHeroFit();
 initMotionToggle();
 initLanguage();
 initCopyEmail();
