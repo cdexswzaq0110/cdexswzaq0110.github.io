@@ -2167,6 +2167,31 @@ function initCopyEmail() {
   });
 }
 
+/* Local time where the work happens — useful context for anyone about to get
+   in touch, and a reminder there is a person on the other end. */
+function initLocalTime() {
+  const out = document.querySelector("[data-taipei-time]");
+
+  if (!out) return;
+
+  const clock = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Taipei",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  const tick = () => {
+    const now = new Date();
+
+    out.textContent = clock.format(now);
+    out.dateTime = now.toISOString();
+  };
+
+  tick();
+  window.setInterval(tick, 20000);
+}
+
 /* Measured, not claimed — the readout beside the lab shows the real rate. */
 function initFpsReadout() {
   const out = document.querySelector("[data-lab-fps]");
@@ -2264,6 +2289,7 @@ initHeroCanvas();
 initMotionToggle();
 initLanguage();
 initCopyEmail();
+initLocalTime();
 initBoundaryLab();
 initCurveLab();
 initNetworkLab();

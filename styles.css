@@ -2042,6 +2042,37 @@ h3,
   border-color: var(--ink);
 }
 
+.local-time {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 1.6rem;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.local-time i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.local-time time {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.lang-zh .local-time {
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+
 .text-link {
   font-size: 0.75rem;
   letter-spacing: 0.12em;
