@@ -3830,3 +3830,119 @@ h3,
     height: 26rem;
   }
 }
+
+/* ---------------------------------------------------------------
+   Résumé timeline
+   --------------------------------------------------------------- */
+
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before,
+.timeline-progress {
+  position: absolute;
+  top: 0.55rem;
+  bottom: 0.55rem;
+  left: 0.3rem;
+  width: 1px;
+  content: "";
+}
+
+.timeline::before {
+  background: var(--ink);
+}
+
+.timeline.is-live::before {
+  background: var(--line);
+}
+
+.timeline-progress {
+  background: var(--ink);
+  transform: scaleY(0);
+  transform-origin: top;
+}
+
+.timeline ol {
+  display: grid;
+  gap: 1.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4.75rem minmax(0, 1fr);
+  column-gap: 1.25rem;
+}
+
+.timeline li::before {
+  position: absolute;
+  top: 0.4rem;
+  left: calc(-2rem + 0.3rem - 4px);
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: var(--ink);
+  content: "";
+  transition: background-color 300ms ease, border-color 300ms ease, scale 400ms var(--ease-out);
+}
+
+.timeline.is-live li:not(.is-reached)::before {
+  border-color: var(--frame);
+  background: var(--canvas);
+  scale: 0.78;
+}
+
+.timeline time {
+  grid-row: span 2;
+  padding-top: 0.12rem;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.timeline h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.timeline li p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.timeline.is-live li > * {
+  transition: opacity 450ms var(--ease-out);
+}
+
+.timeline.is-live li:not(.is-reached) > * {
+  opacity: 0.38;
+}
+
+.timeline-note {
+  margin-top: 1.75rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 700px) {
+  .timeline li {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline time {
+    grid-row: auto;
+  }
+}

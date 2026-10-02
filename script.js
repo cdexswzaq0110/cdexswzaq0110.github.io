@@ -3814,6 +3814,59 @@ function initProjectMap() {
   switcher.setAttribute("aria-label", "Project view");
 }
 
+/* The résumé timeline draws itself down to wherever the reader has got to. */
+function initTimeline() {
+  const timeline = document.querySelector("[data-timeline]");
+
+  if (!timeline) return;
+
+  const items = [...timeline.querySelectorAll("li")];
+
+  if (!motion) {
+    items.forEach((item) => item.classList.add("is-reached"));
+    return;
+  }
+
+  const rail = document.createElement("span");
+
+  rail.className = "timeline-progress";
+  rail.setAttribute("aria-hidden", "true");
+  timeline.append(rail);
+  timeline.classList.add("is-live");
+
+  let drawn = 0;
+
+  function frame(delta) {
+    const box = timeline.getBoundingClientRect();
+    const target = clamp((window.innerHeight * 0.62 - box.top) / box.height, 0, 1);
+
+    drawn = lerp(drawn, target, clamp(0.14 * delta, 0, 1));
+    rail.style.transform = `scaleY(${drawn.toFixed(4)})`;
+
+    const reach = box.top + drawn * box.height;
+
+    items.forEach((item) => {
+      item.classList.toggle("is-reached", item.getBoundingClientRect().top + 8 <= reach);
+    });
+  }
+
+  if (!("IntersectionObserver" in window)) {
+    addFrameTask(frame);
+    return;
+  }
+
+  let stop = null;
+
+  new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting && !stop) {
+      stop = addFrameTask(frame);
+    } else if (!entry.isIntersecting && stop) {
+      stop();
+      stop = null;
+    }
+  }, { rootMargin: "20% 0px" }).observe(timeline);
+}
+
 /* Measured, not claimed — the readout beside the lab shows the real rate. */
 function initFpsReadout() {
   const out = document.querySelector("[data-lab-fps]");
@@ -3916,6 +3969,7 @@ initLanguage();
 initTerminal();
 initCopyEmail();
 initLocalTime();
+initTimeline();
 initBoundaryLab();
 initCurveLab();
 initNetworkLab();
