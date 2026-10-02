@@ -147,7 +147,10 @@ function updateMotionEffects() {
 
   const work = workSection?.getBoundingClientRect();
 
-  if (cardMetrics.length && work && work.top < window.innerHeight * 0.75 && work.bottom > window.innerHeight * 0.25) {
+  if (
+    cardMetrics.length && work && !workSection.classList.contains("is-map") &&
+    work.top < window.innerHeight * 0.75 && work.bottom > window.innerHeight * 0.25
+  ) {
     const closestDistance = Math.min(...cardMetrics);
     updateActiveProjects(cards.filter((_, index) => cardMetrics[index] - closestDistance < 12));
   }
@@ -2420,6 +2423,8 @@ function initCommandMenu() {
       if (!title) return;
 
       add("projects", title, title, () => {
+        document.querySelector('.view-chip[data-view="grid"]:not(.is-active)')?.click();
+
         /* A filtered-out card has nowhere to scroll to — show everything first. */
         if (card.classList.contains("is-filtered")) {
           document.querySelector('.filter-chip[data-filter="all"]')?.click();
@@ -3211,6 +3216,604 @@ function initTerminal() {
   greet();
 }
 
+/* ---------------------------------------------------------------
+   Project map — the work, laid out by what it is about
+   --------------------------------------------------------------- */
+
+/* Each project becomes a TF-IDF vector over its description and tags.
+   Classical MDS gives a first 2D layout of the cosine distances; t-SNE then
+   refines it so neighbourhoods open up instead of lining up along one axis.
+   Nothing is placed by hand, and with a fixed start the result is stable. */
+function projectEmbedding(projects) {
+  const stop = new Set(("a an and are as at be by for from in into is it its of on or that the this to " +
+    "with without using used use through over across each per one two three five more most than then " +
+    "their them they which while who will can built build builds building").split(" "));
+
+  const docs = projects.map((project) => {
+    const counts = new Map();
+    const bump = (token, weight) => counts.set(token, (counts.get(token) || 0) + weight);
+
+    `${project.title} ${project.text}`
+      .toLowerCase()
+      .replace(/c\+\+/g, "cpp")
+      .split(/[^a-z0-9]+/)
+      .filter((token) => token.length > 2 && !stop.has(token))
+      .forEach((token) => bump(token.replace(/(ing|es|s)$/, ""), 1));
+
+    project.tech.forEach((tag) => bump(`tech:${tag.toLowerCase()}`, 2));
+    project.tags.forEach((tag) => bump(`area:${tag}`, 2.5));
+
+    return counts;
+  });
+
+  const df = new Map();
+  docs.forEach((doc) => doc.forEach((_, token) => df.set(token, (df.get(token) || 0) + 1)));
+
+  const vectors = docs.map((doc) => {
+    const vector = new Map();
+    let norm = 0;
+
+    doc.forEach((tf, token) => {
+      const weight = tf * (Math.log((docs.length + 1) / (df.get(token) + 1)) + 1);
+
+      vector.set(token, weight);
+      norm += weight * weight;
+    });
+
+    norm = Math.sqrt(norm) || 1;
+    vector.forEach((weight, token) => vector.set(token, weight / norm));
+    return vector;
+  });
+
+  const n = vectors.length;
+  const similarity = vectors.map((a) => vectors.map((b) => {
+    let dot = 0;
+
+    a.forEach((weight, token) => {
+      dot += weight * (b.get(token) || 0);
+    });
+
+    return dot;
+  }));
+
+  /* Double-centre the squared distances: B = -½ J D² J. */
+  const squared = similarity.map((row) => row.map((value) => (1 - value) ** 2));
+  const rowMean = squared.map((row) => row.reduce((sum, value) => sum + value, 0) / n);
+  const allMean = rowMean.reduce((sum, value) => sum + value, 0) / n;
+  const centred = squared.map((row, i) => row.map((value, j) => -0.5 * (value - rowMean[i] - rowMean[j] + allMean)));
+
+  /* Top two eigenvectors by power iteration with deflation. */
+  const axes = [];
+
+  for (let axis = 0; axis < 2; axis += 1) {
+    let vector = Array.from({ length: n }, (_, i) => Math.sin(i * 1.7 + axis + 1));
+    let value = 0;
+
+    for (let step = 0; step < 300; step += 1) {
+      const next = centred.map((row) => row.reduce((sum, entry, j) => sum + entry * vector[j], 0));
+
+      axes.forEach(({ vector: done, value: doneValue }) => {
+        const overlap = done.reduce((sum, entry, j) => sum + entry * vector[j], 0);
+
+        next.forEach((_, i) => { next[i] -= doneValue * overlap * done[i]; });
+      });
+
+      const length = Math.hypot(...next) || 1;
+
+      value = length;
+      vector = next.map((entry) => entry / length);
+    }
+
+    axes.push({ vector, value });
+  }
+
+  const start = Array.from({ length: n }, (_, i) =>
+    axes.map(({ vector, value }) => vector[i] * Math.sqrt(Math.max(value, 0))));
+  const points = tsne(similarity.map((row) => row.map((value) => Math.max(1 - value, 0))), start);
+
+  /* Fill the frame: each axis to [-1, 1]. */
+  [0, 1].forEach((k) => {
+    const values = points.map((point) => point[k]);
+    const min = Math.min(...values);
+    const span = Math.max(...values) - min || 1;
+
+    points.forEach((point) => { point[k] = ((point[k] - min) / span) * 2 - 1; });
+  });
+
+  return { points, similarity };
+}
+
+/* Exact t-SNE — fine at this size: a dozen points, a few hundred steps. */
+function tsne(distance, start, perplexity = 5, iterations = 700, rate = 30) {
+  const n = distance.length;
+  const target = Math.log(perplexity);
+
+  /* Find each point's bandwidth so its neighbourhood has the set perplexity. */
+  const conditional = distance.map((row, i) => {
+    let beta = 1;
+    let low = 0;
+    let high = Infinity;
+    let probabilities = row;
+
+    for (let step = 0; step < 100; step += 1) {
+      const weights = row.map((d, j) => (j === i ? 0 : Math.exp(-d * d * beta)));
+      const sum = weights.reduce((total, w) => total + w, 0) || 1e-12;
+      const spread = weights.reduce((total, w, j) => total + w * row[j] * row[j], 0) / sum;
+      const entropy = Math.log(sum) + beta * spread;
+
+      probabilities = weights.map((w) => w / sum);
+      if (Math.abs(entropy - target) < 1e-6) break;
+
+      if (entropy > target) {
+        low = beta;
+        beta = high === Infinity ? beta * 2 : (beta + high) / 2;
+      } else {
+        high = beta;
+        beta = (beta + low) / 2;
+      }
+    }
+
+    return probabilities;
+  });
+
+  const p = conditional.map((row, i) => row.map((value, j) => Math.max((value + conditional[j][i]) / (2 * n), 1e-12)));
+  const scale = Math.sqrt(start.reduce((total, [x, y]) => total + x * x + y * y, 0) / (2 * n)) || 1;
+  const y = start.map(([a, b]) => [(a / scale) * 1e-2, (b / scale) * 1e-2]);
+  const velocity = y.map(() => [0, 0]);
+  const gains = y.map(() => [1, 1]);
+
+  for (let iteration = 0; iteration < iterations; iteration += 1) {
+    const exaggeration = iteration < 100 ? 4 : 1;
+    const momentum = iteration < 120 ? 0.5 : 0.8;
+    const q = y.map((a, i) => y.map((b, j) => (i === j ? 0 : 1 / (1 + (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2))));
+    const z = q.reduce((total, row) => total + row.reduce((sum, value) => sum + value, 0), 0);
+
+    y.forEach((a, i) => {
+      const gradient = [0, 0];
+
+      y.forEach((b, j) => {
+        if (i === j) return;
+
+        const force = (exaggeration * p[i][j] - q[i][j] / z) * q[i][j];
+
+        gradient[0] += 4 * force * (a[0] - b[0]);
+        gradient[1] += 4 * force * (a[1] - b[1]);
+      });
+
+      for (let k = 0; k < 2; k += 1) {
+        gains[i][k] = Math.sign(gradient[k]) !== Math.sign(velocity[i][k])
+          ? gains[i][k] + 0.2
+          : Math.max(gains[i][k] * 0.8, 0.01);
+        velocity[i][k] = momentum * velocity[i][k] - rate * gains[i][k] * gradient[k];
+      }
+    });
+
+    y.forEach((a, i) => {
+      a[0] += velocity[i][0];
+      a[1] += velocity[i][1];
+    });
+  }
+
+  return y;
+}
+
+function initProjectMap() {
+  const section = workSection;
+  const grid = projectGrid;
+  const filterBar = section?.querySelector(".filter-bar");
+
+  if (!section || !grid || !filterBar) return;
+
+  const cards = projectCards.filter((card) => !(card.dataset.tags || "").includes("archive"));
+  const projects = cards.map((card) => ({
+    card,
+    title: card.querySelector("h3")?.textContent.trim() || "",
+    kind: (card.querySelector(".project-index")?.textContent || "").split("/").pop().trim(),
+    text: card.querySelector(".project-description")?.textContent || "",
+    tech: [...card.querySelectorAll(".tag-list li")].map((tag) => tag.textContent.trim()),
+    tags: (card.dataset.tags || "").split(/\s+/).filter(Boolean),
+    href: card.querySelector("a")?.href || "",
+  }));
+
+  if (projects.length < 3) return;
+
+  const { points, similarity } = projectEmbedding(projects);
+  const zh = () => root.classList.contains("lang-zh");
+
+  /* Each project's two nearest neighbours become its edges. */
+  const neighbours = projects.map((_, i) => similarity[i]
+    .map((value, j) => ({ j, value }))
+    .filter(({ j }) => j !== i)
+    .sort((a, b) => b.value - a.value));
+  const edges = new Map();
+
+  neighbours.forEach((list, i) => list.slice(0, 2).forEach(({ j, value }) => {
+    edges.set(i < j ? `${i}-${j}` : `${j}-${i}`, { a: Math.min(i, j), b: Math.max(i, j), value });
+  }));
+
+  /* Controls: the existing filters plus a Grid / Map switch. */
+  const controls = document.createElement("div");
+  controls.className = "work-controls";
+  filterBar.before(controls);
+  controls.append(filterBar);
+
+  const switcher = document.createElement("div");
+  switcher.className = "view-switch";
+  switcher.setAttribute("role", "group");
+  switcher.innerHTML = `
+    <button type="button" class="view-chip is-active" data-view="grid" aria-pressed="true"><span data-zh="網格">Grid</span></button>
+    <button type="button" class="view-chip" data-view="map" aria-pressed="false"><span data-zh="地圖">Map</span></button>`;
+  controls.append(switcher);
+
+  const map = document.createElement("div");
+  map.className = "project-map";
+  map.innerHTML = `
+    <canvas aria-hidden="true"></canvas>
+    <div class="map-tip" aria-hidden="true"><strong></strong><span></span><em></em></div>
+    <ul class="map-list visually-hidden"></ul>
+    <p class="map-legend">
+      <span class="map-key"><i class="is-ml"></i><span data-zh="機器學習">Machine learning</span></span>
+      <span class="map-key"><i></i><span data-zh="系統與基礎">Systems &amp; foundations</span></span>
+      <span class="map-note" data-zh="每個點是一個專案。位置由描述與標籤的 TF-IDF 算出，以古典 MDS 初始化，再用 t-SNE 降到二維——越近代表越相似。">Each dot is a project. Positions come from TF-IDF over its description and tags, started with classical MDS and embedded in 2D with t-SNE — closer means more alike.</span>
+    </p>`;
+  grid.after(map);
+
+  const canvas = map.querySelector("canvas");
+  const context = canvas.getContext("2d");
+  const tip = map.querySelector(".map-tip");
+  const list = map.querySelector(".map-list");
+
+  const nodes = projects.map((project, i) => ({
+    ...project,
+    home: points[i],
+    x: 0, y: 0, tx: 0, ty: 0, sx: 0, sy: 0,
+    glow: 0,
+    ml: project.tags.includes("ml"),
+  }));
+
+  /* Keyboard and screen reader path: real links, one per dot. */
+  nodes.forEach((node, i) => {
+    const item = document.createElement("li");
+    const link = document.createElement("a");
+
+    link.href = node.href;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.textContent = node.title;
+    link.addEventListener("focus", () => { focusIndex = i; wake(); });
+    link.addEventListener("blur", () => { focusIndex = -1; wake(); });
+    item.append(link);
+    list.append(item);
+  });
+
+  let width = 0;
+  let height = 0;
+  let hoverIndex = -1;
+  let focusIndex = -1;
+  let morphStart = 0;
+  let stop = null;
+  let inView = false;
+
+  function layout() {
+    const bounds = canvas.getBoundingClientRect();
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+
+    width = bounds.width;
+    height = bounds.height;
+
+    if (!width || !height) return;
+
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(height * ratio);
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+    const padX = Math.min(150, width * 0.16);
+    const padY = 46;
+
+    nodes.forEach((node) => {
+      node.tx = width / 2 + node.home[0] * (width / 2 - padX);
+      node.ty = height / 2 + node.home[1] * (height / 2 - padY);
+    });
+
+    /* Each dot carries its label as a box; push overlapping boxes apart
+       along whichever axis they overlap least. */
+    context.font = labelFont();
+    nodes.forEach((node) => { node.label = context.measureText(node.title.toUpperCase()).width; });
+
+    const box = (node) => {
+      const right = labelsRight(node.tx);
+
+      return {
+        left: right ? node.tx - 9 : node.tx - node.label - 21,
+        right: right ? node.tx + node.label + 21 : node.tx + 9,
+        top: node.ty - 13,
+        bottom: node.ty + 13,
+      };
+    };
+
+    for (let step = 0; step < 240; step += 1) {
+      let moved = false;
+
+      for (let i = 0; i < nodes.length; i += 1) {
+        for (let j = i + 1; j < nodes.length; j += 1) {
+          const a = nodes[i];
+          const b = nodes[j];
+          const p = box(a);
+          const q = box(b);
+          const overlapX = Math.min(p.right, q.right) - Math.max(p.left, q.left);
+          const overlapY = Math.min(p.bottom, q.bottom) - Math.max(p.top, q.top);
+
+          if (overlapX <= 0 || overlapY <= 0) continue;
+
+          moved = true;
+
+          if (overlapY < overlapX) {
+            const push = (overlapY / 2 + 0.5) * (a.ty <= b.ty ? 1 : -1);
+
+            a.ty -= push;
+            b.ty += push;
+          } else {
+            const push = (overlapX / 2 + 0.5) * (a.tx <= b.tx ? 1 : -1);
+
+            a.tx -= push;
+            b.tx += push;
+          }
+        }
+      }
+
+      nodes.forEach((node) => {
+        node.tx = clamp(node.tx, 18, width - 18);
+        node.ty = clamp(node.ty, 24, height - 24);
+      });
+
+      if (!moved) break;
+    }
+
+    /* The morph starts from the grid's own two-column order. */
+    const rows = Math.ceil(nodes.length / 2);
+
+    nodes.forEach((node, i) => {
+      node.sx = width * (i % 2 ? 0.66 : 0.34);
+      node.sy = height * (0.1 + (0.8 * Math.floor(i / 2)) / Math.max(rows - 1, 1));
+    });
+  }
+
+  const ease = (t) => 1 - (1 - t) ** 4;
+  const labelFont = () => `600 ${width < 600 ? 10 : 11}px "Avenir Next", "Segoe UI", Arial, sans-serif`;
+  const labelsRight = (x) => x < width - 170;
+
+  function active() {
+    return focusIndex >= 0 ? focusIndex : hoverIndex;
+  }
+
+  function draw(delta = 1) {
+    if (!width) return;
+
+    const now = performance.now();
+    const current = active();
+    const linked = new Set(current >= 0 ? neighbours[current].slice(0, 3).map(({ j }) => j) : []);
+
+    edges.forEach(({ a, b }) => {
+      if (a === current) linked.add(b);
+      if (b === current) linked.add(a);
+    });
+    let settled = true;
+
+    nodes.forEach((node, i) => {
+      const t = motion && morphStart ? clamp((now - morphStart - i * 35) / 1100, 0, 1) : 1;
+      const k = ease(t);
+
+      if (t < 1) settled = false;
+      node.x = node.sx + (node.tx - node.sx) * k;
+      node.y = node.sy + (node.ty - node.sy) * k;
+
+      const want = current < 0 ? 0.5 : i === current ? 1 : linked.has(i) ? 0.75 : 0.12;
+      const next = motion ? lerp(node.glow, want, clamp(0.2 * delta, 0, 1)) : want;
+
+      if (Math.abs(next - want) > 0.004) settled = false;
+      node.glow = next;
+    });
+
+    context.clearRect(0, 0, width, height);
+
+    /* Edges first, under the dots. */
+    edges.forEach(({ a, b, value }) => {
+      const from = nodes[a];
+      const to = nodes[b];
+      const lit = current >= 0 && (a === current || b === current);
+      const filtered = from.card.classList.contains("is-filtered") || to.card.classList.contains("is-filtered");
+      const alpha = filtered ? 0.04 : lit ? 0.55 : current >= 0 ? 0.05 : 0.08 + value * 0.18;
+
+      context.strokeStyle = `rgba(17, 17, 17, ${alpha})`;
+      context.lineWidth = lit ? 1.25 : 1;
+      context.beginPath();
+      context.moveTo(from.x, from.y);
+      context.lineTo(to.x, to.y);
+      context.stroke();
+    });
+
+    context.font = labelFont();
+    context.textBaseline = "middle";
+
+    nodes.forEach((node, i) => {
+      const filtered = node.card.classList.contains("is-filtered");
+      const strength = filtered ? 0.12 : 0.3 + node.glow * 0.7;
+      const radius = i === current ? 7.5 : 5.5;
+
+      context.globalAlpha = strength;
+      context.beginPath();
+      context.arc(node.x, node.y, radius, 0, Math.PI * 2);
+
+      if (node.ml) {
+        context.fillStyle = "#111111";
+        context.fill();
+      } else {
+        context.fillStyle = "#f5f5f5";
+        context.fill();
+        context.lineWidth = 1.5;
+        context.strokeStyle = "#111111";
+        context.stroke();
+      }
+
+      const right = labelsRight(node.tx);
+
+      context.textAlign = right ? "left" : "right";
+      context.fillStyle = i === current ? "#111111" : "#6f6964";
+      context.fillText(node.title.toUpperCase(), node.x + (right ? 12 : -12), node.y);
+      context.globalAlpha = 1;
+    });
+
+    updateTip(current);
+
+    return settled;
+  }
+
+  function updateTip(current) {
+    if (current < 0) {
+      tip.classList.remove("is-shown");
+      return;
+    }
+
+    const node = nodes[current];
+    const close = neighbours[current]
+      .slice(0, 2)
+      .map(({ j, value }) => `${nodes[j].title} ${Math.round(value * 100)}%`)
+      .join(" · ");
+
+    tip.querySelector("strong").textContent = node.title;
+    tip.querySelector("span").textContent = node.kind;
+    tip.querySelector("em").textContent = `${zh() ? "最相近：" : "Closest: "}${close}`;
+
+    const flip = node.x > width - 260;
+
+    tip.style.transform = `translate(${Math.round(flip ? node.x - 16 : node.x + 16)}px, ${Math.round(node.y + 14)}px)${flip ? " translateX(-100%)" : ""}`;
+    tip.classList.add("is-shown");
+  }
+
+  function frame(delta) {
+    if (draw(delta)) stopLoop();
+  }
+
+  function stopLoop() {
+    stop?.();
+    stop = null;
+  }
+
+  function wake() {
+    if (!section.classList.contains("is-map")) return;
+
+    if (!motion) {
+      draw();
+      return;
+    }
+
+    if (!stop && inView) stop = addFrameTask(frame);
+  }
+
+  function pick(event) {
+    const bounds = canvas.getBoundingClientRect();
+    const x = event.clientX - bounds.left;
+    const y = event.clientY - bounds.top;
+    let best = -1;
+    let bestDistance = 22;
+
+    nodes.forEach((node, i) => {
+      if (node.card.classList.contains("is-filtered")) return;
+
+      const distance = Math.hypot(node.x - x, node.y - y);
+
+      if (distance < bestDistance) {
+        best = i;
+        bestDistance = distance;
+      }
+    });
+
+    return best;
+  }
+
+  canvas.addEventListener("pointermove", (event) => {
+    const next = pick(event);
+
+    if (next === hoverIndex) return;
+
+    hoverIndex = next;
+    canvas.classList.toggle("is-pointing", next >= 0);
+    wake();
+  });
+
+  canvas.addEventListener("pointerleave", () => {
+    hoverIndex = -1;
+    canvas.classList.remove("is-pointing");
+    wake();
+  });
+
+  canvas.addEventListener("click", (event) => {
+    const index = pick(event);
+
+    if (index >= 0) window.open(nodes[index].href, "_blank", "noopener");
+  });
+
+  function setView(view) {
+    const showMap = view === "map";
+
+    if (showMap === section.classList.contains("is-map")) return;
+
+    section.classList.toggle("is-map", showMap);
+    switcher.querySelectorAll("[data-view]").forEach((button) => {
+      const on = button.dataset.view === view;
+
+      button.classList.toggle("is-active", on);
+      button.setAttribute("aria-pressed", String(on));
+    });
+
+    if (!showMap) {
+      stopLoop();
+      tip.classList.remove("is-shown");
+      updatePageState();
+      return;
+    }
+
+    layout();
+    morphStart = performance.now();
+    if (!motion) draw();
+    wake();
+  }
+
+  switcher.addEventListener("click", (event) => {
+    const button = event.target instanceof Element ? event.target.closest("[data-view]") : null;
+
+    if (button) setView(button.dataset.view);
+  });
+
+  /* The filters keep working in map view: they dim what they hide. */
+  filterBar.addEventListener("click", () => window.setTimeout(wake, 0));
+
+  if ("ResizeObserver" in window) {
+    new ResizeObserver(() => {
+      if (!section.classList.contains("is-map")) return;
+      layout();
+      wake();
+      if (!motion || !stop) draw();
+    }).observe(map);
+  }
+
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      if (inView) wake();
+      else stopLoop();
+    }).observe(map);
+  } else {
+    inView = true;
+  }
+
+  document.addEventListener("langchange", () => {
+    switcher.setAttribute("aria-label", zh() ? "專案檢視方式" : "Project view");
+    if (section.classList.contains("is-map")) draw();
+  });
+  switcher.setAttribute("aria-label", "Project view");
+}
+
 /* Measured, not claimed — the readout beside the lab shows the real rate. */
 function initFpsReadout() {
   const out = document.querySelector("[data-lab-fps]");
@@ -3303,6 +3906,7 @@ function initPageTransition() {
 
 initFilter();
 initProjectDirectory();
+initProjectMap();
 initNavSheet();
 initHeroCanvas();
 initMotionToggle();
