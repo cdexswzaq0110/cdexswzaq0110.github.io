@@ -2445,6 +2445,11 @@ function initCommandMenu() {
       notify((await copyText(email)) ? t("Email copied", "已複製 Email") : email);
     }, { keys: "mail contact clipboard", icon: "@", hint: [email, email] });
 
+    add("actions", "Open the terminal", "開啟終端機", () => {
+      go("#terminal");
+      window.setTimeout(() => document.querySelector(".term input")?.focus({ preventScroll: true }), 600);
+    }, { keys: "shell command line cli console 終端", icon: ">" });
+
     add("actions", zh() ? "Switch to English" : "切換成中文", zh() ? "Switch to English" : "切換成中文", () => {
       document.querySelector("[data-lang-toggle]")?.click();
     }, { keys: "language lang chinese english 中文 英文 語言", icon: "文", stay: true });
@@ -2736,6 +2741,476 @@ function initCommandMenu() {
   label();
 }
 
+/* ---------------------------------------------------------------
+   Terminal — a small shell for exploring the site
+   --------------------------------------------------------------- */
+
+/* Everything printed goes through textContent: whatever a visitor types is
+   echoed back as text, never parsed as markup. */
+function initTerminal() {
+  const mount = document.querySelector("[data-term-mount]");
+
+  if (!mount) return;
+
+  const zh = () => root.classList.contains("lang-zh");
+  const t = (en, zhText) => (zh() ? zhText : en);
+  const email = "cdexswzaq0110@gmail.com";
+  const linkedin = "https://www.linkedin.com/in/%E6%A8%BA%E8%A3%95-%E9%BB%83-terryh/";
+
+  const projects = [...document.querySelectorAll(".project-card")].map((card, index) => ({
+    n: index + 1,
+    title: card.querySelector("h3")?.textContent.trim() || "",
+    kind: (card.querySelector(".project-index")?.textContent || "").split("/").pop().trim(),
+    repo: card.querySelector(".project-source span")?.textContent.trim() || "",
+    href: card.querySelector("a")?.href || "",
+    tags: (card.dataset.tags || "").split(/\s+/),
+  }));
+
+  const sections = {
+    top: "", work: "#work", lab: "#lab", about: "#about",
+    faq: "#faq", principles: "#principles", contact: "#contact",
+  };
+
+  const skills = [
+    ["Machine Learning", "機器學習", ["Data preprocessing", "Feature engineering", "Model validation", "Ensemble methods"],
+      ["資料前處理", "特徵工程", "模型驗證", "集成方法"]],
+    ["Computer Science", "資訊科學", ["Data structures", "Algorithms", "Operating systems", "Problem solving"],
+      ["資料結構", "演算法", "作業系統", "解題能力"]],
+    ["Engineering", "工程實務", ["Python & C++", "Git & Linux", "Docker basics", "Backend systems"],
+      ["Python 與 C++", "Git 與 Linux", "Docker 基礎", "後端系統"]],
+  ];
+
+  const help = [
+    ["help", "list commands", "列出所有指令"],
+    ["whoami", "who is behind this site", "這個網站的主人"],
+    ["about", "the short version", "簡短的自我介紹"],
+    ["projects [ml|backend|foundations]", "list projects, optionally filtered", "列出專案，可加分類篩選"],
+    ["open <name|number>", "open a project on GitHub", "在 GitHub 開啟專案"],
+    ["skills", "what I work with", "技能與工具"],
+    ["train", "train a tiny model, live", "現場訓練一個小模型"],
+    ["contact", "ways to reach me", "聯絡方式"],
+    ["copy email", "copy my email address", "複製我的 Email"],
+    ["cd <section>", "jump to a section (ls to list)", "跳到某個區塊（ls 可列出）"],
+    ["lang [en|zh]", "switch language", "切換語言"],
+    ["time", "local time in Taipei", "台北現在幾點"],
+    ["clear", "clear the screen", "清除畫面"],
+  ];
+
+  const names = ["help", "whoami", "about", "projects", "open", "skills", "train", "contact", "copy",
+    "cd", "goto", "ls", "lang", "time", "date", "clear", "echo", "history", "sudo"];
+
+  /* Build the shell. */
+  const label = document.createElement("p");
+  label.className = "eyebrow term-eyebrow";
+
+  const shell = document.createElement("div");
+  shell.className = "term";
+  shell.innerHTML = `
+    <div class="term-bar" aria-hidden="true">
+      <span class="term-dots"><i></i><i></i><i></i></span>
+      <span class="term-title">terry@portfolio — zsh</span>
+      <span class="term-size"></span>
+    </div>
+    <div class="term-body">
+      <div class="term-log" role="log" aria-live="polite"></div>
+      <label class="term-line">
+        <span class="term-prompt" aria-hidden="true">terry@portfolio:~$</span>
+        <input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="send" />
+      </label>
+    </div>`;
+  mount.append(label, shell);
+
+  const body = shell.querySelector(".term-body");
+  const log = shell.querySelector(".term-log");
+  const input = shell.querySelector("input");
+  const size = shell.querySelector(".term-size");
+  const past = [];
+  let cursor = 0;
+  let busy = false;
+
+  /* A line is a list of [text, tone] parts; plain strings are fine too. */
+  function print(...parts) {
+    const line = document.createElement("p");
+
+    parts.forEach((part) => {
+      const [text, tone] = Array.isArray(part) ? part : [part, ""];
+      const span = document.createElement("span");
+
+      span.textContent = text;
+      if (tone) span.className = `term-${tone}`;
+      line.append(span);
+    });
+
+    log.append(line);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  const blank = () => print(" ");
+  const pad = (text, width) => text + " ".repeat(Math.max(width - [...text].length, 1));
+
+  function relabel() {
+    label.textContent = t("Or explore from the command line", "或者，用終端機逛逛");
+    shell.setAttribute("aria-label", t("Terminal", "終端機"));
+    input.setAttribute("aria-label", t("Type a command, for example help", "輸入指令，例如 help"));
+    size.textContent = t("type help", "輸入 help");
+  }
+
+  function greet() {
+    print(["TerryH Huang — portfolio shell", "strong"]);
+    print(t(
+      "Try help, projects ml, open titanic or train.",
+      "試試 help、projects ml、open titanic 或 train。",
+    ));
+    blank();
+  }
+
+  function goTo(hash) {
+    goToAnchor(hash);
+    window.history.pushState(null, "", hash || window.location.pathname);
+  }
+
+  function findProject(query) {
+    const q = query.toLowerCase();
+    const number = Number.parseInt(q, 10);
+
+    if (String(number) === q) return projects.filter((project) => project.n === number);
+
+    const exact = projects.filter((project) =>
+      project.title.toLowerCase() === q || project.repo.toLowerCase() === q);
+
+    if (exact.length) return exact;
+
+    return projects.filter((project) =>
+      project.title.toLowerCase().includes(q) || project.repo.toLowerCase().includes(q));
+  }
+
+  function listProjects(filter) {
+    const chosen = filter ? projects.filter((project) => project.tags.includes(filter)) : projects;
+
+    if (filter && !["ml", "backend", "foundations"].includes(filter)) {
+      print([t(`unknown filter: ${filter}`, `沒有這個分類：${filter}`), "err"]);
+      print(["  ml · backend · foundations", "dim"]);
+      return;
+    }
+
+    chosen.forEach((project) => {
+      print([`${String(project.n).padStart(2, "0")}  `, "dim"], [pad(project.title, 26), "strong"], [project.kind, "dim"]);
+    });
+    print([t(
+      `${chosen.length} projects · open <number> to view one`,
+      `共 ${chosen.length} 個專案 · 輸入 open <編號> 開啟`,
+    ), "accent"]);
+  }
+
+  /* A real, if small, training run: logistic regression by full-batch
+     gradient descent on two seeded Gaussian blobs. */
+  function train() {
+    let seed = 7;
+    const random = () => {
+      seed = (seed + 0x6d2b79f5) | 0;
+      let value = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      value = (value + Math.imul(value ^ (value >>> 7), 61 | value)) ^ value;
+      return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+    };
+    const gauss = () => Math.sqrt(-2 * Math.log(random() || 1e-9)) * Math.cos(2 * Math.PI * random());
+    const data = [];
+
+    for (let i = 0; i < 200; i += 1) {
+      const label = i % 2;
+      const centre = label ? 1 : -1;
+
+      data.push([centre + gauss() * 1.1, centre + gauss() * 1.1, label]);
+    }
+
+    const w = [0, 0];
+    let b = 0;
+    const rate = 0.35;
+    const lines = [];
+
+    for (let epoch = 1; epoch <= 12; epoch += 1) {
+      let loss = 0;
+      let correct = 0;
+      const grad = [0, 0, 0];
+
+      data.forEach(([x, y, label]) => {
+        const p = 1 / (1 + Math.exp(-(w[0] * x + w[1] * y + b)));
+
+        loss -= label ? Math.log(p + 1e-12) : Math.log(1 - p + 1e-12);
+        if ((p >= 0.5 ? 1 : 0) === label) correct += 1;
+        grad[0] += (p - label) * x;
+        grad[1] += (p - label) * y;
+        grad[2] += p - label;
+      });
+
+      loss /= data.length;
+      w[0] -= (rate * grad[0]) / data.length;
+      w[1] -= (rate * grad[1]) / data.length;
+      b -= (rate * grad[2]) / data.length;
+      lines.push([epoch, loss, correct / data.length]);
+    }
+
+    print([t(
+      "Training logistic regression on 200 synthetic points…",
+      "用 200 個合成資料點訓練邏輯斯迴歸……",
+    ), "accent"]);
+
+    const finish = () => {
+      print([t(
+        `done · w = [${w[0].toFixed(2)}, ${w[1].toFixed(2)}], b = ${b.toFixed(2)}`,
+        `完成 · w = [${w[0].toFixed(2)}, ${w[1].toFixed(2)}]，b = ${b.toFixed(2)}`,
+      ), "strong"]);
+      busy = false;
+    };
+
+    const row = ([epoch, loss, accuracy]) => {
+      /* Drawn with a background, not block glyphs, which many monospace fonts lack. */
+      const bar = " ".repeat(Math.max(1, Math.round(loss * 28)));
+
+      print(
+        [`epoch ${String(epoch).padStart(2, "0")}  `, "dim"],
+        [`loss ${loss.toFixed(4)}  `, "strong"],
+        [`acc ${(accuracy * 100).toFixed(1).padStart(5)}%  `, ""],
+        [bar, "fill"],
+      );
+    };
+
+    if (!motion) {
+      lines.forEach(row);
+      finish();
+      return;
+    }
+
+    busy = true;
+    lines.forEach((line, index) => window.setTimeout(() => {
+      row(line);
+      if (index === lines.length - 1) finish();
+    }, 90 * (index + 1)));
+  }
+
+  function run(raw) {
+    const line = raw.trim();
+    const [command = "", ...rest] = line.split(/\s+/);
+    const arg = rest.join(" ");
+    const name = command.toLowerCase();
+
+    print(["terry@portfolio:~$ ", "accent"], line);
+
+    if (!line) return;
+
+    past.push(line);
+    cursor = past.length;
+
+    switch (name) {
+      case "help":
+        help.forEach(([usage, en, zhText]) => print([pad(usage, 36), "strong"], [t(en, zhText), "dim"]));
+        break;
+
+      case "whoami":
+        print(t(
+          "TerryH Huang (黃樺裕) — aspiring machine learning engineer, Taipei.",
+          "黃樺裕（TerryH Huang）——在台北、持續精進的機器學習工程師。",
+        ));
+        break;
+
+      case "about":
+        print(t(
+          "Works across machine learning, algorithms and software systems,",
+          "專注於機器學習、演算法與軟體系統，",
+        ));
+        print(t(
+          "building projects with Python, Scikit-learn, FastAPI, Docker and Git.",
+          "主要用 Python、Scikit-learn、FastAPI、Docker 與 Git 做專案。",
+        ));
+        print([t(
+          "Right now: making the path from data preparation to deployment more solid.",
+          "最近在把資料準備到部署這條路走得更紮實。",
+        ), "dim"]);
+        break;
+
+      case "projects":
+        listProjects(arg.toLowerCase());
+        break;
+
+      case "open": {
+        if (!arg) {
+          print([t("usage: open <name|number>", "用法：open <名稱|編號>"), "err"]);
+          break;
+        }
+
+        const found = findProject(arg);
+
+        if (found.length === 1) {
+          print([t("opening ", "開啟 "), "dim"], [`${found[0].href.replace(/^https?:\/\//, "")} ↗`, "accent"]);
+          window.open(found[0].href, "_blank", "noopener");
+        } else if (found.length > 1) {
+          print(t(`${found.length} matches — be more specific:`, `找到 ${found.length} 個，再具體一點：`));
+          found.forEach((project) => print([`  ${String(project.n).padStart(2, "0")}  `, "dim"], project.title));
+        } else {
+          print([t(`no project matches “${arg}”`, `沒有符合「${arg}」的專案`), "err"]);
+        }
+        break;
+      }
+
+      case "skills":
+        skills.forEach(([en, zhText, listEn, listZh]) => {
+          print([pad(t(en, zhText), zh() ? 14 : 20), "strong"], [(zh() ? listZh : listEn).join(" · "), "dim"]);
+        });
+        break;
+
+      case "contact":
+        print([pad("email", 10), "dim"], email);
+        print([pad("linkedin", 10), "dim"], "linkedin.com/in/樺裕-黃-terryh");
+        print([pad("github", 10), "dim"], "github.com/cdexswzaq0110");
+        print([t("tip: copy email", "小提示：copy email"), "accent"]);
+        break;
+
+      case "copy":
+      case "email":
+        copyText(email).then((ok) => {
+          print(ok ? [t(`${email} copied to clipboard`, `已複製 ${email}`), "accent"] : email);
+        });
+        break;
+
+      case "cd":
+      case "goto": {
+        const where = arg.toLowerCase().replace(/^[~./]+|\/$/g, "");
+
+        if (!where || where === ".." || where === "home") {
+          goTo("");
+          print([t("→ top", "→ 頁首"), "dim"]);
+        } else if (where in sections) {
+          goTo(sections[where]);
+          print([`→ ${where}`, "dim"]);
+        } else if (where === "resume" || where === "links") {
+          window.location.href = `${where}.html`;
+        } else {
+          print([t(`no such section: ${arg}`, `沒有這個區塊：${arg}`), "err"]);
+          print(["  " + Object.keys(sections).join("  "), "dim"]);
+        }
+        break;
+      }
+
+      case "ls":
+        print(...Object.keys(sections).filter((key) => key !== "top").map((key) => [`${key}/  `, "accent"]),
+          ["resume  links", "strong"]);
+        break;
+
+      case "lang": {
+        const want = arg.toLowerCase().startsWith("z") || arg === "中文" ? "zh"
+          : arg.toLowerCase().startsWith("e") ? "en"
+          : zh() ? "en" : "zh";
+
+        if ((want === "zh") !== zh()) document.querySelector("[data-lang-toggle]")?.click();
+        print([t("language: English", "語言：繁體中文"), "accent"]);
+        break;
+      }
+
+      case "time":
+      case "date": {
+        const now = new Intl.DateTimeFormat(zh() ? "zh-TW" : "en-GB", {
+          timeZone: "Asia/Taipei", dateStyle: "full", timeStyle: "short",
+        }).format(new Date());
+
+        print(t(`Taipei · ${now}`, `台北 · ${now}`));
+        break;
+      }
+
+      case "train":
+        train();
+        break;
+
+      case "clear":
+        log.replaceChildren();
+        break;
+
+      case "echo":
+        print(arg);
+        break;
+
+      case "history":
+        past.forEach((entry, index) => print([`${String(index + 1).padStart(3)}  `, "dim"], entry));
+        break;
+
+      case "sudo":
+        print([t("Nice try. Permission denied.", "想得美，權限不足。"), "err"]);
+        print([t(`The inbox is always open, though: ${email}`, `不過信箱隨時開著：${email}`), "dim"]);
+        break;
+
+      default:
+        print([t(`command not found: ${command}`, `找不到指令：${command}`), "err"], [t(" · type help", " · 輸入 help 看看"), "dim"]);
+    }
+  }
+
+  /* Tab completes the word under the caret; it only traps Tab when there is
+     something to complete, so keyboard users can still move on. */
+  function complete() {
+    const value = input.value;
+    const parts = value.split(/\s+/);
+    let pool;
+
+    if (parts.length <= 1) {
+      pool = names;
+    } else if (/^(cd|goto)$/i.test(parts[0])) {
+      pool = [...Object.keys(sections), "resume", "links"];
+    } else if (/^projects$/i.test(parts[0])) {
+      pool = ["ml", "backend", "foundations"];
+    } else if (/^lang$/i.test(parts[0])) {
+      pool = ["en", "zh"];
+    } else if (/^copy$/i.test(parts[0])) {
+      pool = ["email"];
+    } else if (/^open$/i.test(parts[0])) {
+      pool = projects.map((project) => project.title.toLowerCase().split(/\s+/)[0]);
+    } else {
+      return;
+    }
+
+    const word = parts[parts.length - 1].toLowerCase();
+    const hits = [...new Set(pool.filter((entry) => entry.startsWith(word)))];
+
+    if (hits.length === 1) {
+      parts[parts.length - 1] = hits[0];
+      input.value = `${parts.join(" ")} `;
+    } else if (hits.length > 1) {
+      print(["terry@portfolio:~$ ", "accent"], value);
+      print([hits.join("  "), "dim"]);
+    }
+  }
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (busy) return;
+      run(input.value);
+      input.value = "";
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!past.length) return;
+      cursor = Math.max(cursor - 1, 0);
+      input.value = past[cursor];
+    } else if (event.key === "ArrowDown") {
+      event.preventDefault();
+      cursor = Math.min(cursor + 1, past.length);
+      input.value = past[cursor] || "";
+    } else if (event.key === "Tab" && input.value.trim()) {
+      event.preventDefault();
+      complete();
+    } else if (event.key.toLowerCase() === "l" && event.ctrlKey) {
+      event.preventDefault();
+      log.replaceChildren();
+    }
+  });
+
+  /* Clicking anywhere in the window puts the caret back in the prompt,
+     unless the visitor is selecting text to copy. */
+  body.addEventListener("click", () => {
+    if (!window.getSelection()?.toString()) input.focus({ preventScroll: true });
+  });
+
+  document.addEventListener("langchange", relabel);
+  relabel();
+  greet();
+}
+
 /* Measured, not claimed — the readout beside the lab shows the real rate. */
 function initFpsReadout() {
   const out = document.querySelector("[data-lab-fps]");
@@ -2834,6 +3309,7 @@ initMotionToggle();
 initGhostType();
 initCommandMenu();
 initLanguage();
+initTerminal();
 initCopyEmail();
 initLocalTime();
 initBoundaryLab();

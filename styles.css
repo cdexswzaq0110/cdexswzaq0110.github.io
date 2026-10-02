@@ -3518,3 +3518,142 @@ h3,
     display: none;
   }
 }
+
+/* ---------------------------------------------------------------
+   Terminal
+   --------------------------------------------------------------- */
+
+.term-mount {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(3.5rem, 7vw, 5rem);
+}
+
+#terminal {
+  scroll-margin-top: 5.25rem;
+}
+
+.term {
+  margin-top: 1rem;
+  border: 1px solid var(--ink);
+  color: rgb(255 255 255 / 82%);
+  background: var(--ink);
+  box-shadow: 0 1.5rem 3rem rgb(17 17 17 / 16%);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  transition: box-shadow 300ms var(--ease-out);
+}
+
+.term:focus-within {
+  box-shadow: 0 1.5rem 3rem rgb(17 17 17 / 22%), 0 0 0 1px var(--frame);
+}
+
+.term-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  color: rgb(255 255 255 / 45%);
+  font-size: 0.68rem;
+}
+
+.term-dots {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.term-dots i {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 18%);
+}
+
+.term-title {
+  flex: 1;
+  text-align: center;
+}
+
+.term-body {
+  height: clamp(15rem, 36vh, 21rem);
+  padding: 1rem 1.1rem 1.2rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: rgb(255 255 255 / 22%) transparent;
+  scrollbar-width: thin;
+}
+
+.term-log p {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.term-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.term-prompt,
+.term-accent {
+  color: var(--warm);
+}
+
+.term-prompt {
+  flex: none;
+}
+
+.term input {
+  min-width: 0;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: var(--white);
+  background: none;
+  font: inherit;
+  caret-color: var(--warm);
+}
+
+.has-cursor .term input,
+.has-cursor .cmdk input {
+  cursor: none;
+}
+
+.term-strong {
+  color: var(--white);
+}
+
+.term-dim {
+  color: rgb(255 255 255 / 46%);
+}
+
+.term-err {
+  color: #d9ab9b;
+}
+
+.term-fill {
+  background: linear-gradient(var(--warm), var(--warm)) left center / 100% 0.55em no-repeat;
+}
+
+@media (max-width: 700px) {
+  .term {
+    font-size: 0.74rem;
+  }
+
+  /* 16px keeps iOS from zooming the page when the prompt takes focus. */
+  .term input {
+    font-size: 16px;
+  }
+
+  .term-title {
+    text-align: right;
+  }
+
+  .term-size {
+    display: none;
+  }
+}
