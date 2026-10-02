@@ -2057,6 +2057,7 @@ function initLanguage() {
     root.lang = zh ? "zh-Hant" : "en";
     root.classList.toggle("lang-zh", zh);
     toggle.setAttribute("aria-pressed", String(zh));
+    document.dispatchEvent(new CustomEvent("langchange", { detail: { lang: zh ? "zh" : "en" } }));
 
     /* Split text caches its own markup, so re-run it on the new strings. */
     if (root.classList.contains("motion-ready")) {
@@ -2264,6 +2265,72 @@ function initSpotlight() {
   });
 }
 
+/* Outline type drifts behind How I Work, against the marquee's direction,
+   and picks up speed while the page is scrolling. */
+function initGhostType() {
+  const band = document.querySelector("[data-ghost]");
+  const strip = band?.querySelector("span");
+
+  if (!band || !strip) return;
+
+  let period = 0;
+  let offset = 0;
+
+  /* Two identical halves, each wider than the screen, so wrapping by one
+     half is invisible. */
+  function build() {
+    const phrase = root.classList.contains("lang-zh") ? "資料 · 模型 · 系統 · " : "Data · Model · System · ";
+
+    strip.textContent = phrase;
+
+    const width = strip.getBoundingClientRect().width;
+
+    if (!width) return;
+
+    strip.textContent = phrase.repeat((Math.ceil(window.innerWidth / width) + 1) * 2);
+    period = strip.getBoundingClientRect().width / 2;
+  }
+
+  build();
+  document.fonts?.ready.then(build);
+  document.addEventListener("langchange", build);
+
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(build, 200);
+  });
+
+  if (!motion) return;
+
+  function run(delta) {
+    if (!period) return;
+
+    const speed = (0.25 + clamp(Math.abs(scrollState.velocity) * 0.06, 0, 6)) * scrollState.direction;
+
+    offset += speed * delta;
+    offset = ((offset % period) + period) % period - period;
+    strip.style.transform = `translate3d(${offset.toFixed(2)}px, 0, 0)`;
+  }
+
+  if ("IntersectionObserver" in window) {
+    let stop = null;
+
+    new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !stop) {
+        stop = addFrameTask(run);
+      } else if (!entry.isIntersecting && stop) {
+        stop();
+        stop = null;
+      }
+    }).observe(band.parentElement);
+
+    return;
+  }
+
+  addFrameTask(run);
+}
+
 /* Measured, not claimed — the readout beside the lab shows the real rate. */
 function initFpsReadout() {
   const out = document.querySelector("[data-lab-fps]");
@@ -2359,6 +2426,7 @@ initProjectDirectory();
 initNavSheet();
 initHeroCanvas();
 initMotionToggle();
+initGhostType();
 initLanguage();
 initCopyEmail();
 initLocalTime();

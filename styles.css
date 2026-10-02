@@ -1966,6 +1966,44 @@ h3,
    Principles
    --------------------------------------------------------------- */
 
+.principles-section {
+  position: relative;
+  overflow-x: clip;
+}
+
+.principles-section > .container {
+  position: relative;
+  z-index: 1;
+}
+
+.ghost-type {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 0;
+  color: transparent;
+  font-family: var(--font-display);
+  font-size: clamp(6rem, 17vw, 15rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: pre;
+  -webkit-text-stroke: 1px rgb(17 17 17 / 13%);
+  pointer-events: none;
+  user-select: none;
+  transform: translateY(-40%);
+}
+
+.ghost-type span {
+  display: inline-block;
+  will-change: transform;
+}
+
+.lang-zh .ghost-type {
+  letter-spacing: 0.04em;
+}
+
 .principles-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
