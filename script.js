@@ -2331,6 +2331,411 @@ function initGhostType() {
   addFrameTask(run);
 }
 
+/* ---------------------------------------------------------------
+   Command menu — ⌘K / Ctrl K / "/" from anywhere on the site
+   --------------------------------------------------------------- */
+
+/* Keyboard-first, so it opens and closes instantly: an entrance animation
+   on something you summon dozens of times only reads as lag. */
+function initCommandMenu() {
+  const headerEnd = document.querySelector(".header-end");
+  const onHome = Boolean(document.querySelector("[data-project-grid]"));
+  const mac = /Mac|iPhone|iPad/.test(window.navigator.platform || window.navigator.userAgent);
+  const zh = () => root.classList.contains("lang-zh");
+  const t = (en, zhText) => (zh() ? zhText : en);
+  const email = "cdexswzaq0110@gmail.com";
+  let trigger = null;
+
+  /* Read headings now, while the markup is still in its original English;
+     the language switch rewrites them later. */
+  const labs = [...document.querySelectorAll(".lab-card h3[id]")].map((heading) => ({
+    id: heading.id,
+    en: heading.textContent.trim(),
+    zh: heading.dataset.zh || heading.textContent.trim(),
+  }));
+
+  /* Hash targets live on the home page; elsewhere the menu navigates there. */
+  function go(hash) {
+    if (!onHome) {
+      window.location.href = `index.html${hash}`;
+      return;
+    }
+
+    goToAnchor(hash);
+    window.history.pushState(null, "", hash || window.location.pathname);
+  }
+
+  function openUrl(url) {
+    window.open(url, "_blank", "noopener");
+  }
+
+  const toast = document.createElement("p");
+  toast.className = "cmdk-toast";
+  toast.setAttribute("role", "status");
+  document.body.append(toast);
+  let toastTimer;
+
+  function notify(message) {
+    toast.textContent = message;
+    toast.classList.add("is-shown");
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => toast.classList.remove("is-shown"), 1800);
+  }
+
+  function commands() {
+    const list = [];
+    const add = (group, en, zhText, run, extra = {}) => list.push({ group, en, zh: zhText, run, ...extra });
+
+    [
+      ["", "Top", "頁首", "top start home"],
+      ["#work", "Work", "作品", "projects portfolio"],
+      ["#lab", "In the Model", "模型內部", "lab interactive demos"],
+      ["#about", "About", "關於我", "bio profile"],
+      ["#faq", "FAQ", "常見問題", "questions"],
+      ["#principles", "How I Work", "我的工作方式", "principles"],
+      ["#contact", "Contact", "聯絡", "email hire"],
+    ].forEach(([hash, en, zhText, keys]) => {
+      add("navigate", en, zhText, () => go(hash), { keys, icon: "#" });
+    });
+
+    const here = window.location.pathname.split("/").pop() || "index.html";
+
+    [
+      ["index.html", "Home", "首頁"],
+      ["resume.html", "Resume", "履歷"],
+      ["links.html", "Links", "連結"],
+    ].forEach(([href, en, zhText]) => {
+      add("pages", en, zhText, () => { window.location.href = href; }, {
+        icon: "→",
+        hint: href === here ? ["Current page", "目前頁面"] : null,
+      });
+    });
+
+    document.querySelectorAll(".project-card").forEach((card) => {
+      const title = card.querySelector("h3")?.textContent.trim();
+      const index = card.querySelector(".project-index");
+      const kind = (index?.textContent || "").split("/").pop().trim();
+      const tags = [...card.querySelectorAll(".tag-list li")].map((tag) => tag.textContent).join(" ");
+
+      if (!title) return;
+
+      add("projects", title, title, () => {
+        /* A filtered-out card has nowhere to scroll to — show everything first. */
+        if (card.classList.contains("is-filtered")) {
+          document.querySelector('.filter-chip[data-filter="all"]')?.click();
+        }
+
+        go(`#${card.id}`);
+        card.focus({ preventScroll: true });
+        card.classList.remove("is-pinged");
+        void card.offsetWidth;
+        card.classList.add("is-pinged");
+      }, { keys: `${tags} ${card.dataset.tags || ""}`, icon: "◆", hint: kind ? [kind, kind] : null });
+    });
+
+    labs.forEach((lab) => {
+      add("lab", lab.en, lab.zh, () => go(`#${lab.id}`), {
+        keys: "lab demo interactive machine learning",
+        icon: "∿",
+        hint: ["Interactive", "互動"],
+      });
+    });
+
+    add("actions", "Copy email address", "複製 Email", async () => {
+      notify((await copyText(email)) ? t("Email copied", "已複製 Email") : email);
+    }, { keys: "mail contact clipboard", icon: "@", hint: [email, email] });
+
+    add("actions", zh() ? "Switch to English" : "切換成中文", zh() ? "Switch to English" : "切換成中文", () => {
+      document.querySelector("[data-lang-toggle]")?.click();
+    }, { keys: "language lang chinese english 中文 英文 語言", icon: "文", stay: true });
+
+    add("actions", motion ? "Turn motion off" : "Turn motion on", motion ? "關閉動態效果" : "開啟動態效果", () => {
+      document.querySelector("[data-motion-toggle]")?.click();
+    }, { keys: "animation reduce motion 動畫", icon: "◐" });
+
+    add("actions", "Open résumé PDF", "開啟履歷 PDF", () => openUrl("assets/Huang_Hua_Yu_Resume.pdf"), {
+      keys: "resume cv pdf download", icon: "↓",
+    });
+
+    add("elsewhere", "GitHub", "GitHub", () => openUrl("https://github.com/cdexswzaq0110"), {
+      keys: "code repositories", icon: "↗", hint: ["cdexswzaq0110", "cdexswzaq0110"],
+    });
+
+    add("elsewhere", "LinkedIn", "LinkedIn", () => openUrl("https://www.linkedin.com/in/%E6%A8%BA%E8%A3%95-%E9%BB%83-terryh/"), {
+      keys: "profile network", icon: "↗",
+    });
+
+    return list;
+  }
+
+  const groups = {
+    navigate: ["Jump to", "前往"],
+    pages: ["Pages", "頁面"],
+    projects: ["Projects", "專案"],
+    lab: ["In the Model", "模型內部"],
+    actions: ["Actions", "動作"],
+    elsewhere: ["Elsewhere", "外部連結"],
+  };
+
+  /* Build the menu itself. */
+  const menu = document.createElement("div");
+  menu.className = "cmdk";
+  menu.innerHTML = `
+    <div class="cmdk-scrim"></div>
+    <div class="cmdk-panel" role="dialog" aria-modal="true">
+      <label class="cmdk-search">
+        <span class="cmdk-caret" aria-hidden="true">›</span>
+        <input type="text" role="combobox" aria-expanded="true" aria-controls="cmdk-list"
+          aria-autocomplete="list" autocomplete="off" spellcheck="false" />
+        <kbd>Esc</kbd>
+      </label>
+      <div class="cmdk-list" id="cmdk-list" role="listbox"></div>
+      <p class="cmdk-foot" aria-hidden="true"></p>
+    </div>`;
+  document.body.append(menu);
+
+  const panel = menu.querySelector(".cmdk-panel");
+  const input = menu.querySelector("input");
+  const listbox = menu.querySelector(".cmdk-list");
+  const foot = menu.querySelector(".cmdk-foot");
+
+  let items = [];
+  let shown = [];
+  let active = 0;
+  let returnFocus = null;
+
+  function score(item, terms) {
+    const label = `${item.en} ${item.zh}`.toLowerCase();
+    const hay = `${label} ${item.keys || ""} ${groups[item.group].join(" ")}`.toLowerCase();
+    let total = 0;
+
+    for (const term of terms) {
+      if (!hay.includes(term)) return -1;
+      if (item.en.toLowerCase().startsWith(term) || item.zh.toLowerCase().startsWith(term)) total += 3;
+      else if (label.includes(term)) total += 2;
+      else total += 1;
+    }
+
+    return total;
+  }
+
+  function render() {
+    const query = input.value.trim().toLowerCase();
+    const terms = query.split(/\s+/).filter(Boolean);
+
+    shown = [];
+    listbox.replaceChildren();
+
+    Object.keys(groups).forEach((group) => {
+      const matches = items
+        .filter((item) => item.group === group)
+        .map((item) => ({ item, score: terms.length ? score(item, terms) : 0 }))
+        .filter((entry) => entry.score >= 0)
+        .sort((a, b) => b.score - a.score);
+
+      if (!matches.length) return;
+
+      const heading = document.createElement("p");
+      heading.className = "cmdk-group";
+      heading.setAttribute("role", "presentation");
+      heading.textContent = t(...groups[group]);
+      listbox.append(heading);
+
+      matches.forEach(({ item }) => {
+        const option = document.createElement("div");
+        const index = shown.length;
+        const icon = document.createElement("span");
+        const label = document.createElement("span");
+
+        option.className = "cmdk-item";
+        option.id = `cmdk-option-${index}`;
+        option.setAttribute("role", "option");
+        icon.className = "cmdk-icon";
+        icon.setAttribute("aria-hidden", "true");
+        icon.textContent = item.icon || "·";
+        label.className = "cmdk-label";
+        label.textContent = zh() ? item.zh : item.en;
+        option.append(icon, label);
+
+        if (item.hint) {
+          const hint = document.createElement("span");
+
+          hint.className = "cmdk-hint";
+          hint.textContent = zh() ? item.hint[1] : item.hint[0];
+          option.append(hint);
+        }
+
+        option.addEventListener("pointermove", () => {
+          if (active !== index) select(index, false);
+        });
+        option.addEventListener("click", () => run(index));
+        listbox.append(option);
+        shown.push(item);
+      });
+    });
+
+    if (!shown.length) {
+      const empty = document.createElement("p");
+
+      empty.className = "cmdk-empty";
+      empty.textContent = zh() ? `找不到「${input.value.trim()}」相關的結果` : `No results for “${input.value.trim()}”`;
+      listbox.append(empty);
+    }
+
+    select(0, true);
+  }
+
+  function select(index, reveal) {
+    const options = listbox.querySelectorAll(".cmdk-item");
+
+    if (!options.length) {
+      input.removeAttribute("aria-activedescendant");
+      return;
+    }
+
+    active = (index + options.length) % options.length;
+    options.forEach((option, i) => option.setAttribute("aria-selected", String(i === active)));
+    input.setAttribute("aria-activedescendant", options[active].id);
+
+    if (reveal) options[active].scrollIntoView({ block: "nearest" });
+  }
+
+  function label() {
+    panel.setAttribute("aria-label", t("Command menu", "指令面板"));
+    input.placeholder = t("Search pages, projects, actions…", "搜尋頁面、專案或動作…");
+    listbox.setAttribute("aria-label", t("Commands", "指令"));
+    foot.textContent = t("↑ ↓ to move · ↵ to open · Esc to close", "↑ ↓ 移動 · ↵ 開啟 · Esc 關閉");
+    trigger?.setAttribute("aria-label", t("Open command menu", "開啟指令面板"));
+  }
+
+  function open() {
+    if (root.classList.contains("cmdk-open")) return;
+
+    returnFocus = document.activeElement;
+    items = commands();
+    label();
+    input.value = "";
+    root.classList.add("cmdk-open");
+    render();
+    input.focus({ preventScroll: true });
+  }
+
+  function close() {
+    if (!root.classList.contains("cmdk-open")) return;
+
+    root.classList.remove("cmdk-open");
+
+    if (returnFocus instanceof HTMLElement && document.contains(returnFocus)) {
+      returnFocus.focus({ preventScroll: true });
+    }
+  }
+
+  function run(index) {
+    const item = shown[index];
+
+    if (!item) return;
+
+    if (item.stay) {
+      item.run();
+      return;
+    }
+
+    close();
+    item.run();
+  }
+
+  input.addEventListener("input", render);
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown" || (event.ctrlKey && event.key === "n")) {
+      event.preventDefault();
+      select(active + 1, true);
+    } else if (event.key === "ArrowUp" || (event.ctrlKey && event.key === "p")) {
+      event.preventDefault();
+      select(active - 1, true);
+    } else if (event.key === "Home" && !input.value) {
+      event.preventDefault();
+      select(0, true);
+    } else if (event.key === "End" && !input.value) {
+      event.preventDefault();
+      select(-1, true);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      run(active);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      if (input.value) {
+        input.value = "";
+        render();
+      } else {
+        close();
+      }
+    } else if (event.key === "Tab") {
+      /* The input is the only stop in the dialog; options are reached by arrows. */
+      event.preventDefault();
+    }
+  });
+
+  menu.querySelector(".cmdk-scrim").addEventListener("click", close);
+
+  /* Keep the wheel off the page underneath, unless the list itself can scroll. */
+  menu.addEventListener(
+    "wheel",
+    (event) => {
+      if (!(listbox.contains(event.target) && listbox.scrollHeight > listbox.clientHeight)) {
+        event.preventDefault();
+      }
+    },
+    { passive: false },
+  );
+
+  /* Language changes re-word the open menu in place. */
+  document.addEventListener("langchange", () => {
+    label();
+
+    if (root.classList.contains("cmdk-open")) {
+      items = commands();
+      render();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    const key = event.key.toLowerCase();
+
+    if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && key === "k") {
+      event.preventDefault();
+      if (root.classList.contains("cmdk-open")) close();
+      else open();
+      return;
+    }
+
+    if (key !== "/" || event.metaKey || event.ctrlKey || event.altKey) return;
+
+    const target = event.target;
+    const typing =
+      target instanceof HTMLElement &&
+      (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+
+    if (typing || root.classList.contains("cmdk-open")) return;
+
+    event.preventDefault();
+    open();
+  });
+
+  /* A visible way in for people who do not know the shortcut. */
+  if (headerEnd) {
+    trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "cmdk-trigger";
+    trigger.setAttribute("aria-keyshortcuts", mac ? "Meta+K" : "Control+K");
+    trigger.innerHTML = `<kbd>${mac ? "⌘" : "Ctrl"}</kbd><kbd>K</kbd>`;
+    trigger.addEventListener("click", open);
+    headerEnd.prepend(trigger);
+  }
+
+  label();
+}
+
 /* Measured, not claimed — the readout beside the lab shows the real rate. */
 function initFpsReadout() {
   const out = document.querySelector("[data-lab-fps]");
@@ -2427,6 +2832,7 @@ initNavSheet();
 initHeroCanvas();
 initMotionToggle();
 initGhostType();
+initCommandMenu();
 initLanguage();
 initCopyEmail();
 initLocalTime();

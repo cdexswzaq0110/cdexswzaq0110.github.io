@@ -3264,3 +3264,257 @@ h3,
     min-height: 30rem;
   }
 }
+
+/* ---------------------------------------------------------------
+   Command menu
+   --------------------------------------------------------------- */
+
+.cmdk-trigger {
+  display: inline-flex;
+  min-height: 2.2rem;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: none;
+  cursor: pointer;
+  opacity: 0.7;
+  scale: var(--press, 1);
+  transition: opacity 200ms ease, scale 160ms var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cmdk-trigger:hover,
+.cmdk-trigger:focus-visible {
+  opacity: 1;
+}
+
+.cmdk-trigger:active {
+  --press: 0.94;
+}
+
+.cmdk-trigger kbd,
+.cmdk kbd {
+  display: inline-grid;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  place-items: center;
+  padding: 0 0.3rem;
+  border: 1px solid rgb(255 255 255 / 38%);
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.cmdk {
+  position: fixed;
+  inset: 0;
+  z-index: 86;
+  display: none;
+}
+
+.cmdk-open .cmdk {
+  display: block;
+}
+
+.cmdk-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgb(17 17 17 / 42%);
+}
+
+.cmdk-panel {
+  position: absolute;
+  top: min(18vh, 9rem);
+  left: 50%;
+  display: flex;
+  width: min(36rem, calc(100vw - 2rem));
+  max-height: min(31rem, calc(100vh - 6rem));
+  flex-direction: column;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  background: var(--canvas);
+  box-shadow: 0 2rem 4rem rgb(17 17 17 / 28%);
+  transform: translateX(-50%);
+}
+
+.cmdk-search {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1.1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.cmdk-caret {
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.cmdk-search input {
+  min-width: 0;
+  height: 3.4rem;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: var(--ink);
+  background: none;
+  font: 400 1rem/1.2 var(--font-body);
+}
+
+.cmdk-search input::placeholder {
+  color: var(--muted);
+}
+
+.cmdk-search kbd {
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+.cmdk-list {
+  min-height: 0;
+  flex: 1;
+  padding: 0.3rem 0 0.6rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: 2.2rem 0.6rem;
+  scrollbar-color: var(--line) transparent;
+  scrollbar-width: thin;
+}
+
+.cmdk-group {
+  margin: 0;
+  padding: 0.85rem 1.1rem 0.35rem;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.lang-zh .cmdk-group {
+  letter-spacing: 0.08em;
+}
+
+.cmdk-item {
+  display: flex;
+  min-height: 2.6rem;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0 1.1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.has-cursor .cmdk-item {
+  cursor: none;
+}
+
+.cmdk-item[aria-selected="true"] {
+  color: var(--white);
+  background: var(--ink);
+}
+
+.cmdk-icon {
+  width: 1rem;
+  flex: none;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.cmdk-label {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cmdk-hint {
+  max-width: 45%;
+  flex: none;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cmdk-item[aria-selected="true"] .cmdk-icon,
+.cmdk-item[aria-selected="true"] .cmdk-hint {
+  color: rgb(255 255 255 / 62%);
+}
+
+.cmdk-empty {
+  margin: 0;
+  padding: 2rem 1.1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.cmdk-foot {
+  margin: 0;
+  padding: 0.7rem 1.1rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cmdk-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  z-index: 86;
+  margin: 0;
+  padding: 0.7rem 1.1rem;
+  color: var(--white);
+  background: var(--ink);
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 0.75rem);
+  transition: opacity 200ms var(--ease-out), transform 260ms var(--ease-out);
+}
+
+.cmdk-toast.is-shown {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* A card reached from the menu says "here" once. */
+.motion-on .project-card.is-pinged {
+  animation: card-ping 1100ms var(--ease-out);
+}
+
+@keyframes card-ping {
+  from {
+    box-shadow: 0 0 0 0 rgb(17 17 17 / 38%);
+  }
+
+  to {
+    box-shadow: 0 0 0 1.4rem rgb(17 17 17 / 0%);
+  }
+}
+
+@media (max-width: 900px), (pointer: coarse) {
+  .cmdk-trigger {
+    display: none;
+  }
+}
