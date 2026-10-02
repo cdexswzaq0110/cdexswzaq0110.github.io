@@ -1783,6 +1783,41 @@ h3,
   background: var(--ink);
 }
 
+.about-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.about-section > .container {
+  position: relative;
+  z-index: 1;
+}
+
+.about-spotlight {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 1.25rem;
+  overflow: hidden;
+  color: var(--warm);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  line-height: 1.75;
+  letter-spacing: 0.04em;
+  word-break: break-all;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(circle 11rem at var(--spot-x, -40rem) var(--spot-y, -40rem),
+      #000 0%, rgb(0 0 0 / 45%) 38%, transparent 72%);
+  mask-image: radial-gradient(circle 11rem at var(--spot-x, -40rem) var(--spot-y, -40rem),
+      #000 0%, rgb(0 0 0 / 45%) 38%, transparent 72%);
+  transition: opacity 500ms var(--ease-out);
+}
+
+.about-section.is-lit .about-spotlight {
+  opacity: 0.4;
+}
+
 .section-heading-light h2 {
   color: var(--white);
 }

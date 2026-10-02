@@ -2192,6 +2192,78 @@ function initLocalTime() {
   window.setInterval(tick, 20000);
 }
 
+/* The dark About section hides a field of weights. A soft light follows the
+   pointer and uncovers it, as if the section were the inside of a model. */
+function initSpotlight() {
+  const layer = document.querySelector("[data-spotlight]");
+  const section = layer?.closest("section");
+
+  if (!layer || !section || !motion || !finePointer.matches) return;
+
+  const weights = [];
+
+  for (let i = 0; i < 4200; i += 1) {
+    const value = Math.random() * 2 - 1;
+
+    weights.push((value < 0 ? "−" : "+") + Math.abs(value).toFixed(3));
+  }
+
+  layer.textContent = weights.join(" ");
+
+  const target = { x: 0, y: 0 };
+  const light = { x: 0, y: 0 };
+  const client = { x: 0, y: 0 };
+  let inside = false;
+  let stop = null;
+
+  const aim = () => {
+    const bounds = section.getBoundingClientRect();
+
+    target.x = client.x - bounds.left;
+    target.y = client.y - bounds.top;
+  };
+
+  const frame = (delta) => {
+    const ease = clamp(0.16 * delta, 0, 1);
+
+    light.x = lerp(light.x, target.x, ease);
+    light.y = lerp(light.y, target.y, ease);
+    layer.style.setProperty("--spot-x", `${light.x.toFixed(1)}px`);
+    layer.style.setProperty("--spot-y", `${light.y.toFixed(1)}px`);
+
+    if (!inside && Math.abs(light.x - target.x) < 0.5 && Math.abs(light.y - target.y) < 0.5) {
+      stop?.();
+      stop = null;
+    }
+  };
+
+  section.addEventListener("pointerenter", (event) => {
+    client.x = event.clientX;
+    client.y = event.clientY;
+    aim();
+    light.x = target.x;
+    light.y = target.y;
+    inside = true;
+    section.classList.add("is-lit");
+
+    if (!stop) stop = addFrameTask(frame);
+  });
+
+  section.addEventListener("pointermove", (event) => {
+    client.x = event.clientX;
+    client.y = event.clientY;
+    aim();
+  });
+
+  /* Scrolling moves the section under a still pointer. */
+  window.addEventListener("scroll", () => inside && aim(), { passive: true });
+
+  section.addEventListener("pointerleave", () => {
+    inside = false;
+    section.classList.remove("is-lit");
+  });
+}
+
 /* Measured, not claimed — the readout beside the lab shows the real rate. */
 function initFpsReadout() {
   const out = document.querySelector("[data-lab-fps]");
@@ -2313,6 +2385,7 @@ if (!motion) {
     initTilt();
     initScramble();
     initLinkPreview();
+    initSpotlight();
   }
 
   playIntro().then(() => {
