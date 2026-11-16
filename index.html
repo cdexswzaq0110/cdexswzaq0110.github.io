@@ -39,8 +39,8 @@
     <meta name="twitter:image" content="https://cdexswzaq0110.github.io/assets/system-design.webp" />
 
     <link rel="preload" as="image" href="assets/cappuccino.webp" fetchpriority="high" />
-    <link rel="stylesheet" href="styles.css?v=31" />
-    <script src="script.js?v=31" defer></script>
+    <link rel="stylesheet" href="styles.css?v=32" />
+    <script src="script.js?v=32" defer></script>
     <script>
       /* Set intro + capability flags before first paint to avoid a flash. */
       (function () {
@@ -82,7 +82,7 @@
             ],
             "sameAs": [
               "https://github.com/cdexswzaq0110",
-              "https://www.linkedin.com/in/%E6%A8%BA%E8%A3%95-%E9%BB%83-terryh/"
+              "https://www.linkedin.com/in/huayu-huang/"
             ]
           },
           {
@@ -206,24 +206,24 @@
               <span class="hero-line" data-zh="把原理讀透。">Study deeply.</span>
               <span class="hero-line" data-zh="把成果交清楚。">Ship clearly.</span>
             </h1>
-            <p class="hero-lead" data-zh="我是黃樺裕，一位持續精進的機器學習工程師，把資料、演算法與可靠的軟體，組合成真正跑得起來的專案。">
-              I’m TerryH Huang, an aspiring machine learning engineer connecting data,
-              algorithms, and dependable software into practical projects.
+            <p class="hero-lead" data-zh="我是黃樺裕，專注於需求預測、模型驗證與 Agent 系統。從資料到 API，我把實驗、設計取捨與限制一起交付。">
+              I’m TerryH Huang. I build forecasting, model evaluation, and agent systems —
+              from data to APIs, with experiments, trade-offs, and limitations you can inspect.
             </p>
             <div class="hero-actions">
-              <a class="button" href="#work" data-magnetic data-zh="查看精選作品">View selected work</a>
+              <a class="button" href="#engineering" data-magnetic data-zh="閱讀工程案例">Read engineering cases</a>
               <a
                 class="button button-secondary"
-                href="https://github.com/cdexswzaq0110"
-                target="_blank"
-                rel="noreferrer"
+                href="assets/Huang_Hua_Yu_Resume.pdf"
+                download
                 data-magnetic
+                data-zh="下載履歷 PDF ↓"
               >
-                Explore GitHub
+                Download résumé PDF ↓
               </a>
             </div>
-            <p class="status-pill" data-zh="&lt;i aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;歡迎交流與合作">
-              <i aria-hidden="true"></i>Open to learning and collaboration
+            <p class="status-pill" data-zh="&lt;i aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;尋找 ML／AI 工程師機會">
+              <i aria-hidden="true"></i>Open to ML &amp; AI engineering roles
             </p>
           </div>
 
@@ -259,6 +259,82 @@
             <span>FastAPI</span><b aria-hidden="true">✳</b>
             <span>Docker</span><b aria-hidden="true">✳</b>
             <span>MLOps</span><b aria-hidden="true">✳</b>
+          </div>
+        </div>
+      </section>
+
+      <section class="section engineering-section" id="engineering" aria-labelledby="engineering-title">
+        <div class="container">
+          <div class="section-heading">
+            <h2 id="engineering-title" data-zh="工程案例">Engineering cases</h2>
+            <span aria-hidden="true"></span>
+          </div>
+          <div class="engineering-layout">
+            <div class="engineering-intro">
+              <p class="engineering-lead" data-zh="不只做出來。<br />也說清楚為什麼。">Beyond the build.<br />Inside the decisions.</p>
+              <p data-zh="三個案例：問題、設計取捨，以及能檢查的結果。數據來自各專案的實驗紀錄，不代表正式營運成效。">Three cases: the problem, the trade-off, and the evidence. Results come from project experiment records, not production impact.</p>
+              <a class="text-link" href="#work" data-zh="瀏覽全部 14 個專案 ↓">Explore all 14 projects ↓</a>
+            </div>
+            <div class="engineering-cases">
+              <details class="engineering-case" id="case-veloguard" open>
+                <summary>
+                  <span class="case-number" aria-hidden="true">01</span>
+                  <span class="case-heading"><strong>VeloGuard</strong><span data-zh="預測更準，卻不急著上線。">A better forecast. Not an automatic release.</span></span>
+                  <span class="case-toggle" aria-hidden="true"></span>
+                </summary>
+                <div class="case-content">
+                  <p class="case-result"><strong>5.21%</strong><span data-zh="保留測試集的 MAE 改善，相對於季節性中位數基準。">lower frozen-test MAE than the seasonal-median baseline.</span></p>
+                  <dl>
+                    <div><dt data-zh="問題">Problem</dt><dd data-zh="用 188 萬筆 Citi Bike 行程，預測 40 個站未來 30 分鐘的借還需求。">Forecast 30-minute departures and arrivals at 40 stations using 1.88 million Citi Bike trips.</dd></div>
+                    <div><dt data-zh="取捨">Decision</dt><dd data-zh="模型選拔和調度上線分開把關。模擬中少搬了 199 輛車，卻多出 95 次服務失敗，因此保留基準策略，候選模型維持 shadow-only。">Separate forecast selection from dispatch release. The replay moved 199 fewer bikes but caused 95 more service failures, so the candidate stays shadow-only.</dd></div>
+                    <div><dt data-zh="限制">Boundary</dt><dd data-zh="這是離線回放，使用簡化的容量與搬運假設；不是實際營運改善，也不是因果估計。">An offline replay with simplified capacity and transfer assumptions — not a real-world or causal improvement estimate.</dd></div>
+                  </dl>
+                  <div class="case-links">
+                    <a href="https://github.com/cdexswzaq0110/VeloGuard/blob/main/docs/verified-run.json" target="_blank" rel="noreferrer" data-zh="實驗紀錄 ↗">Experiment record ↗</a>
+                    <a href="https://github.com/cdexswzaq0110/VeloGuard/blob/main/docs/model-card.md" target="_blank" rel="noreferrer" data-zh="模型卡 ↗">Model card ↗</a>
+                    <a href="https://github.com/cdexswzaq0110/VeloGuard#quick-start-offline-demo" target="_blank" rel="noreferrer" data-zh="重跑離線示範 ↗">Run the offline demo ↗</a>
+                  </div>
+                </div>
+              </details>
+              <details class="engineering-case" id="case-agent-kernel">
+                <summary>
+                  <span class="case-number" aria-hidden="true">02</span>
+                  <span class="case-heading"><strong>Agent Kernel</strong><span data-zh="讓 Agent 的每一步都能追查。">Make the agent’s steps inspectable.</span></span>
+                  <span class="case-toggle" aria-hidden="true"></span>
+                </summary>
+                <div class="case-content">
+                  <p class="case-result"><strong data-zh="離線可重現">Offline-first</strong><span data-zh="可重跑的 Agent 工作流程，留下工具呼叫與評估紀錄。">a reproducible agent workflow with tool traces and evaluation records.</span></p>
+                  <dl>
+                    <div><dt data-zh="問題">Problem</dt><dd data-zh="多步驟研究任務失敗時，如何分辨是工具、執行流程，還是答案缺乏依據？">When a multi-step research task fails, was it the tool, the execution flow, or an unsupported answer?</dd></div>
+                    <div><dt data-zh="取捨">Decision</dt><dd data-zh="以工具權限、有限次重試、Supervisor 檢查與 JSONL 軌跡，讓錯誤可定位；預設用確定性的 MockBackend 重現流程。">Use scoped tools, bounded retries, supervisor review, and JSONL traces. A deterministic MockBackend makes the default scenario repeatable.</dd></div>
+                    <div><dt data-zh="限制">Boundary</dt><dd data-zh="預設示範是離線模擬。真實模型的 adapter 已提供，但離線測試不等於真實模型成功率，也不代表已部署的企業服務。">The default demo is simulated. A real-model adapter is available, but offline tests do not establish live-model success rates or an enterprise deployment.</dd></div>
+                  </dl>
+                  <div class="case-links">
+                    <a href="https://github.com/cdexswzaq0110/Agent-System-Design#quickstart" target="_blank" rel="noreferrer" data-zh="重跑研究示範 ↗">Run the research demo ↗</a>
+                    <a href="https://github.com/cdexswzaq0110/Agent-System-Design/blob/main/ARCHITECTURE.md" target="_blank" rel="noreferrer" data-zh="架構與取捨 ↗">Architecture &amp; trade-offs ↗</a>
+                  </div>
+                </div>
+              </details>
+              <details class="engineering-case" id="case-thermoforge">
+                <summary>
+                  <span class="case-number" aria-hidden="true">03</span>
+                  <span class="case-heading"><strong>ThermoForge</strong><span data-zh="先確認指標真的在量想解的問題。">Test what the metric actually rewards.</span></span>
+                  <span class="case-toggle" aria-hidden="true"></span>
+                </summary>
+                <div class="case-content">
+                  <p class="case-result"><strong>0.965</strong><span data-zh="保留的 20 個候選池中，recall@10/60 為 0.965 ± 0.057。">recall@10/60, ± 0.057 across 20 frozen candidate pools.</span></p>
+                  <dl>
+                    <div><dt data-zh="問題">Problem</dt><dd data-zh="用神經代理模型篩選 2D 熱傳導佈局；評估必須量到位置的影響，而不是不同功率帶來的分數。">Screen 2D heat-conduction layouts with a neural surrogate. The evaluation must measure layout quality, not differences in power budgets.</dd></div>
+                    <div><dt data-zh="取捨">Decision</dt><dd data-zh="固定板子、功率與散熱條件，只改元件位置；與物理基準比較，並追蹤熱點低估，而不只看平均誤差。">Fix the board, power, and cooling; vary only component positions. Compare against a physics baseline and track hotspot underestimation, not just average error.</dd></div>
+                    <div><dt data-zh="限制">Boundary</dt><dd data-zh="資料由 2D 穩態求解器生成，不是 CFD 或硬體實測；在這個專案中，也沒有證明代理模型比求解器更快。">Data comes from a 2D steady-state solver, not CFD or hardware measurements. This project does not demonstrate a speed advantage over its solver.</dd></div>
+                  </dl>
+                  <div class="case-links">
+                    <a href="https://github.com/cdexswzaq0110/ThermoForge/blob/main/docs/05-results.md" target="_blank" rel="noreferrer" data-zh="評估結果 ↗">Evaluation results ↗</a>
+                    <a href="https://github.com/cdexswzaq0110/ThermoForge" target="_blank" rel="noreferrer" data-zh="程式碼與重現方式 ↗">Code &amp; reproduction ↗</a>
+                  </div>
+                </div>
+              </details>
+            </div>
           </div>
         </div>
       </section>
@@ -1034,7 +1110,7 @@
       <section class="contact-section" id="contact" aria-labelledby="contact-title">
         <div class="container contact-grid">
           <div>
-            <p class="eyebrow" data-zh="歡迎交流與合作">Open to learning and collaboration</p>
+            <p class="eyebrow" data-zh="尋找 ML／AI 工程師機會">Open to ML &amp; AI engineering roles</p>
             <h2 id="contact-title" data-split="chars" data-zh="一起做點有用的東西。">Let’s build something useful.</h2>
             <p class="local-time">
               <i aria-hidden="true"></i>
@@ -1057,7 +1133,7 @@
             <p class="visually-hidden" role="status" data-copy-status></p>
             <a
               class="text-link"
-              href="https://www.linkedin.com/in/%E6%A8%BA%E8%A3%95-%E9%BB%83-terryh/"
+              href="https://www.linkedin.com/in/huayu-huang/"
               target="_blank"
               rel="noreferrer"
               data-scramble

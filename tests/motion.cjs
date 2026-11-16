@@ -11,7 +11,7 @@ const url = process.env.PORTFOLIO_URL || "http://127.0.0.1:8765/";
   const ready = (page) => page.waitForFunction(() =>
     document.documentElement.classList.contains("motion-ready") &&
     document.querySelector(".hero").classList.contains("is-visible") &&
-    !document.body.classList.contains("is-loading"));
+    !document.documentElement.classList.contains("is-loading"));
 
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: "no-preference" });
@@ -19,9 +19,9 @@ const url = process.env.PORTFOLIO_URL || "http://127.0.0.1:8765/";
     await page.goto(url);
     await ready(page);
     assert.equal(await page.locator(".grain").evaluate(el => getComputedStyle(el).animationName), "grain-shift");
-    const canvasBefore = await page.locator("canvas").evaluate(el => el.toDataURL());
+    const canvasBefore = await page.locator(".hero-canvas").evaluate(el => el.toDataURL());
     await page.waitForTimeout(200);
-    assert.notEqual(await page.locator("canvas").evaluate(el => el.toDataURL()), canvasBefore, "Hero dot field must move.");
+    assert.notEqual(await page.locator(".hero-canvas").evaluate(el => el.toDataURL()), canvasBefore, "Hero dot field must move.");
 
     const visual = page.locator(".project-visual").first();
     const image = visual.locator("img");
@@ -78,14 +78,49 @@ const url = process.env.PORTFOLIO_URL || "http://127.0.0.1:8765/";
     assert.ok(indices.every(index => index >= 1 && index <= 8), "Counter must use filtered positions, not original card numbers.");
     console.log("PASS: desktop dot field, grain, pointer tilt, image parallax, inertial scroll, grid skew, filter sweep, card transitions, and counter.");
 
+    const summary = page.locator("#case-agent-kernel > summary");
+    await summary.scrollIntoViewIfNeeded();
+    await summary.focus();
+    await page.keyboard.press("Enter");
+    assert.equal(await page.locator("#case-agent-kernel").evaluate(el => el.open), true);
+    await page.locator("[data-lang-toggle]").click();
+    assert.equal(await page.locator("html").getAttribute("lang"), "zh-Hant");
+    assert.ok((await summary.textContent()).includes("每一步"));
+    assert.ok((await page.locator("#case-agent-kernel .case-content").textContent()).includes("離線模擬"));
+    assert.equal(await page.locator("#case-agent-kernel").evaluate(el => el.open), true, "Language switching must preserve the open case.");
+    await page.locator("[data-lang-toggle]").click();
+    await summary.focus();
+    await page.keyboard.press("Enter");
+    assert.equal(await page.locator("#case-agent-kernel").evaluate(el => el.open), false);
+
+    await page.locator('[data-filter="all"]').click();
+    await page.locator('[data-view="map"]').click();
+    assert.equal(await page.locator("#work").evaluate(el => el.classList.contains("is-map")), true);
+    assert.equal(await page.locator(".map-list a").count(), 13);
+    await page.locator('[data-view="grid"]').click();
+    assert.equal(await page.locator(".project-card:not(.is-filtered)").count(), 14);
+    await page.keyboard.press("Control+k");
+    await page.locator(".cmdk input").fill("Engineering cases");
+    await page.keyboard.press("Enter");
+    await page.waitForURL("**/#engineering");
+    assert.equal(await page.locator('.hero-actions a[download]').getAttribute("href"), "assets/Huang_Hua_Yu_Resume.pdf");
+    const pdf = await page.request.get(new URL("assets/Huang_Hua_Yu_Resume.pdf", url).href);
+    assert.equal(pdf.status(), 200);
+    assert.equal((await pdf.body()).subarray(0, 5).toString(), "%PDF-");
+    console.log("PASS: keyboard-operated cases, Chinese/English round trip, existing Grid/Map, command menu, and real PDF download.");
+
     const reduced = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: "reduce" });
     watch(reduced);
+    // Preserve the owner's existing motion-on default; verify the explicit off/on control.
+    await reduced.addInitScript(() => {
+      if (!localStorage.getItem("th-motion")) localStorage.setItem("th-motion", "off");
+    });
     await reduced.goto(url);
     assert.equal(await reduced.locator("html").evaluate(el => el.classList.contains("motion-ready")), false);
     assert.equal(await reduced.locator(".grain").evaluate(el => getComputedStyle(el).animationName), "none");
-    const stillCanvas = await reduced.locator("canvas").evaluate(el => el.toDataURL());
+    const stillCanvas = await reduced.locator(".hero-canvas").evaluate(el => el.toDataURL());
     await reduced.waitForTimeout(200);
-    assert.equal(await reduced.locator("canvas").evaluate(el => el.toDataURL()), stillCanvas);
+    assert.equal(await reduced.locator(".hero-canvas").evaluate(el => el.toDataURL()), stillCanvas);
     await reduced.locator('[data-filter="foundations"]').click();
     assert.equal(await reduced.locator(".project-card:not(.is-filtered)").count(), 2);
     assert.equal(await reduced.locator("[data-project-count]").evaluate(el => el.getAnimations().length), 0);
@@ -94,12 +129,15 @@ const url = process.env.PORTFOLIO_URL || "http://127.0.0.1:8765/";
     assert.equal(await reduced.evaluate(() => localStorage.getItem("th-motion")), "on");
     assert.equal(await reduced.locator(".grain").evaluate(el => getComputedStyle(el).animationName), "grain-shift");
     assert.ok((await reduced.locator('[data-filter="ml"]').evaluate(el => getComputedStyle(el).transitionProperty)).includes("background-size"), "Explicit Motion On must restore filter animation even when the OS requests reduced motion.");
-    console.log("PASS: reduced-motion fallback and explicit Motion On preference.");
+    console.log("PASS: explicit Motion Off/On with OS reduced-motion enabled.");
 
     const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "no-preference" });
     watch(mobile);
     await mobile.goto(url);
     await ready(mobile);
+    await mobile.locator("#case-thermoforge > summary").click();
+    assert.equal(await mobile.locator("#case-thermoforge").evaluate(el => el.open), true);
+    assert.equal(await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     await mobile.locator(".project-visual").first().scrollIntoViewIfNeeded();
     await mobile.waitForFunction(() => document.querySelector(".project-card").classList.contains("is-visible"));
     assert.equal(await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
@@ -108,8 +146,16 @@ const url = process.env.PORTFOLIO_URL || "http://127.0.0.1:8765/";
     const noJS = await browser.newPage({ javaScriptEnabled: false });
     await noJS.goto(url);
     assert.equal(await noJS.locator(".project-card:visible").count(), 14);
+    await noJS.locator("#case-agent-kernel > summary").click();
+    assert.equal(await noJS.locator("#case-agent-kernel .case-content").isVisible(), true);
+    await page.goto(new URL("index.html#case-agent-kernel", url).href);
+    assert.equal(await page.locator("#case-agent-kernel").evaluate(el => el.open), true, "A résumé deep link must open its case.");
+    for (const file of ["resume.html", "links.html"]) {
+      await page.goto(new URL(file, url).href);
+      assert.ok(await page.locator('a[href="https://www.linkedin.com/in/huayu-huang/"]').count());
+    }
     assert.deepEqual(errors, [], "No browser JavaScript errors.");
-    console.log("PASS: mobile reveals/filtering, no horizontal overflow, and all 14 projects without JavaScript.");
+    console.log("PASS: mobile cases/reveals/filtering, no overflow, no-JS content, deep links, and profile links on all pages.");
   } finally {
     await browser.close();
   }

@@ -117,4 +117,24 @@ assert.ok(labIntro[1].startsWith(`${ZH_WORDS[labCards]}個`),
 
 assert.ok(statSync(resolve(root, "google02af818ae84c33ec.html")).size > 0);
 assert.ok(readFileSync(resolve(root, "robots.txt"), "utf8").includes("Sitemap: https://cdexswzaq0110.github.io/sitemap.xml"));
-console.log("PASS: 14 ordered projects, unique covers, repository links, filter totals, lab count, and SEO files.");
+
+const cases = [...html.matchAll(/<details class="engineering-case" id="([^"]+)"[^>]*>([\s\S]*?)<\/details>/g)];
+assert.deepEqual(cases.map(([, id]) => id), ["case-veloguard", "case-agent-kernel", "case-thermoforge"]);
+for (const [, id, content] of cases) {
+  assert.ok(content.includes("<summary>"), `${id} must work without JavaScript.`);
+  assert.equal([...content.matchAll(/<dt /g)].length, 3, `${id} needs problem, decision, and boundary.`);
+  assert.ok(content.includes('href="https://github.com/'), `${id} needs a primary evidence link.`);
+  assert.ok(content.includes("data-zh="), `${id} needs the Chinese overlay.`);
+  assert.ok(readFileSync(resolve(root, "resume.html"), "utf8").includes(`index.html#${id}`));
+}
+assert.ok(html.includes("5.21%") && html.includes("shadow-only"));
+assert.ok(html.includes("MockBackend") && html.includes("offline tests do not establish live-model success rates"));
+assert.ok(html.includes("0.965") && html.includes("20 frozen candidate pools"));
+assert.ok(html.includes('href="assets/Huang_Hua_Yu_Resume.pdf"\n                download'));
+assert.ok(statSync(resolve(root, "assets/Huang_Hua_Yu_Resume.pdf")).size > 0);
+for (const file of ["index.html", "resume.html", "links.html", "script.js"]) {
+  const content = readFileSync(resolve(root, file), "utf8");
+  assert.ok(content.includes("https://www.linkedin.com/in/huayu-huang/"));
+  assert.ok(!content.includes("%E6%A8%BA%E8%A3%95-%E9%BB%83-terryh") && !content.includes("linkedin.com/in/樺裕"));
+}
+console.log("PASS: 14 ordered projects, unique covers, filters, lab count, SEO, three sourced bilingual cases, résumé access, and consistent LinkedIn.");

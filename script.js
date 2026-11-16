@@ -323,6 +323,8 @@ function goToAnchor(hash) {
 
   if (!anchor) return false;
 
+  if (anchor.matches(".engineering-case")) anchor.open = true;
+
   const toolbar = document.querySelector(".work-toolbar");
   const offset = anchor.matches(".project-card") && toolbar
     ? parseFloat(getComputedStyle(toolbar).top) + toolbar.offsetHeight + 24
@@ -358,6 +360,14 @@ document.addEventListener("click", (event) => {
   event.preventDefault();
   window.history.pushState(null, "", destination.hash);
 });
+
+function openLinkedCase() {
+  const entry = document.getElementById(window.location.hash.slice(1));
+  if (entry?.matches(".engineering-case")) entry.open = true;
+}
+
+openLinkedCase();
+window.addEventListener("hashchange", openLinkedCase);
 
 /* ---------------------------------------------------------------
    4. Intro curtain
@@ -2391,6 +2401,7 @@ function initCommandMenu() {
 
     [
       ["", "Top", "頁首", "top start home"],
+      ["#engineering", "Engineering cases", "工程案例", "evidence decisions experiments 案例 證據"],
       ["#work", "Work", "作品", "projects portfolio"],
       ["#lab", "In the Model", "模型內部", "lab interactive demos"],
       ["#about", "About", "關於我", "bio profile"],
@@ -2471,7 +2482,7 @@ function initCommandMenu() {
       keys: "code repositories", icon: "↗", hint: ["cdexswzaq0110", "cdexswzaq0110"],
     });
 
-    add("elsewhere", "LinkedIn", "LinkedIn", () => openUrl("https://www.linkedin.com/in/%E6%A8%BA%E8%A3%95-%E9%BB%83-terryh/"), {
+    add("elsewhere", "LinkedIn", "LinkedIn", () => openUrl("https://www.linkedin.com/in/huayu-huang/"), {
       keys: "profile network", icon: "↗",
     });
 
@@ -2760,7 +2771,7 @@ function initTerminal() {
   const zh = () => root.classList.contains("lang-zh");
   const t = (en, zhText) => (zh() ? zhText : en);
   const email = "cdexswzaq0110@gmail.com";
-  const linkedin = "https://www.linkedin.com/in/%E6%A8%BA%E8%A3%95-%E9%BB%83-terryh/";
+  const linkedin = "https://www.linkedin.com/in/huayu-huang/";
 
   const projects = [...document.querySelectorAll(".project-card")].map((card, index) => ({
     n: index + 1,
@@ -3064,7 +3075,7 @@ function initTerminal() {
 
       case "contact":
         print([pad("email", 10), "dim"], email);
-        print([pad("linkedin", 10), "dim"], "linkedin.com/in/樺裕-黃-terryh");
+        print([pad("linkedin", 10), "dim"], "linkedin.com/in/huayu-huang/");
         print([pad("github", 10), "dim"], "github.com/cdexswzaq0110");
         print([t("tip: copy email", "小提示：copy email"), "accent"]);
         break;

@@ -941,6 +941,87 @@ h3,
   padding-block: var(--section-space);
 }
 
+/* Case notes inherit the existing palette; gallery and motion rules stay untouched. */
+.engineering-section {
+  border-bottom: 1px solid var(--line);
+  scroll-margin-top: 5.25rem;
+}
+
+.engineering-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  margin-top: 2.5rem;
+}
+
+.engineering-intro > p {
+  margin-bottom: 1.5rem;
+  color: var(--muted);
+}
+
+.engineering-intro .engineering-lead {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  line-height: 1.2;
+}
+
+.engineering-case {
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 6rem;
+}
+
+.engineering-case:last-child { border-bottom: 1px solid var(--line); }
+
+.engineering-case > summary {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) 1rem;
+  align-items: start;
+  gap: 0.75rem;
+  padding-block: 1.5rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.engineering-case > summary::-webkit-details-marker { display: none; }
+.engineering-case > summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.case-number { color: var(--muted); font-size: 0.75rem; padding-top: 0.25rem; }
+.case-heading { display: grid; gap: 0.3rem; }
+.case-heading strong { color: var(--ink); font-family: var(--font-display); font-size: 1.2rem; }
+.case-heading > span { color: var(--muted); font-size: 0.9rem; }
+.case-toggle::before { content: "+"; font-size: 1.3rem; }
+.engineering-case[open] .case-toggle::before { content: "−"; }
+.case-content { padding: 0 0 1.75rem 2.25rem; }
+
+.case-result {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.case-result strong {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.case-result > span { color: var(--muted); font-size: 0.85rem; }
+.case-content dl { margin: 0; }
+.case-content dl > div { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: 0.75rem; margin-block: 1rem; }
+.case-content dt { color: var(--muted); font-size: 0.8rem; padding-top: 0.1rem; }
+.case-content dd { margin: 0; font-size: 0.9rem; }
+.case-links { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; margin-top: 1.5rem; font-size: 0.8rem; }
+.case-links a { text-underline-offset: 0.25em; }
+.case-links a:hover { text-decoration-thickness: 2px; }
+
+@media (max-width: 760px) {
+  .engineering-layout { grid-template-columns: minmax(0, 1fr); }
+  .case-content { padding-left: 0; }
+  .case-content dl > div { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
+}
+
 .work-section {
   overflow-x: clip;
 }
